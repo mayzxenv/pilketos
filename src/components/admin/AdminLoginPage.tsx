@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Lock, User, Key, ArrowRight, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Key, ArrowRight, ArrowLeft, User, AlertCircle } from 'lucide-react';
 import { FloatingSchoolElements } from '../common/SchoolDecorations';
+import { AuthService } from '../../services/auth';
 
 interface AdminLoginPageProps {
   onLoginSuccess: () => void;
@@ -11,26 +12,22 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
   onLoginSuccess,
   onBackToStudent
 }) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
-
-    const u = username.trim().toLowerCase();
-    const p = password.trim();
-
-    const configuredUsername = import.meta.env.VITE_ADMIN_USERNAME?.trim().toLowerCase();
-    const configuredPassword = import.meta.env.VITE_ADMIN_PASSWORD?.trim();
-
-    if (configuredUsername && configuredPassword && u === configuredUsername && p === configuredPassword) {
+    setIsSubmitting(true);
+    try {
+      await AuthService.signIn(email, password);
       onLoginSuccess();
-    } else if (!configuredUsername || !configuredPassword) {
-      setErrorMessage('Akun admin belum dikonfigurasi. Isi VITE_ADMIN_USERNAME dan VITE_ADMIN_PASSWORD pada file .env.');
-    } else {
-      setErrorMessage('Username atau kata sandi admin tidak sesuai.');
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Login admin gagal.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -68,14 +65,14 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
-                Username Panitia
+                Email Admin
               </label>
               <div className="relative">
                 <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Masukkan username panitia..."
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Masukkan email admin..."
                   className="w-full px-4 py-3 pl-11 rounded-xl text-sm bg-white/10 border border-white/20 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
                   autoFocus
                 />
@@ -92,7 +89,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Masukkan kata sandi panitia..."
+                  placeholder="Masukkan password admin..."
                   className="w-full px-4 py-3 pl-11 rounded-xl text-sm bg-white/10 border border-white/20 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all"
                 />
                 <Key className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -108,9 +105,10 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
 
             <button
               type="submit"
+              disabled={isSubmitting}
               className="w-full py-3.5 px-5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
             >
-              <span>Masuk ke Panel Pengawasan</span>
+              <span>{isSubmitting ? 'Memverifikasi...' : 'Masuk ke Panel Pengawasan'}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>

@@ -21,6 +21,7 @@ import { ReportsView } from './ReportsView';
 import { SpreadsheetSyncView } from './SpreadsheetSyncView';
 import { AuditLogView } from './AuditLogView';
 import { AdminLoginPage } from './AdminLoginPage';
+import { AuthService } from '../../services/auth';
 
 interface AdminLayoutProps {
   students: Student[];
@@ -88,7 +89,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           }
         }}
         onOpenDisplayMode={onOpenDisplayMode}
-        onLogoutAdmin={() => {
+        onLogoutAdmin={async () => {
+          await AuthService.signOut();
           setIsAdminAuthenticated(false);
           onExitAdmin();
         }}
