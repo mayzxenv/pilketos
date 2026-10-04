@@ -1,0 +1,6 @@
+{
+  "name": "SIVOT — Sistem Informasi Voting Terpadu",
+  "description": "Platform e-voting pemilihan Ketua OSIS sekolah yang ceria, interaktif, aman, dan modern dengan proteksi anti double vote dan monitoring real-time.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
