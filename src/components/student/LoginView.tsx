@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Student } from '../../types';
 import { VotingEngine } from '../../services/votingEngine';
 import { FloatingSchoolElements, BallotBoxIllustration } from '../common/SchoolDecorations';
-import { Search, UserCheck, AlertCircle, Sparkles, ChevronRight, School } from 'lucide-react';
+import { Search, UserCheck, AlertCircle, ChevronRight, School } from 'lucide-react';
 
 interface LoginViewProps {
   onLoginSuccess: (student: Student) => void;
@@ -65,8 +65,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
         <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl shadow-blue-900/5 border border-blue-100">
           {/* Header illustration & badges */}
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100 mb-3 transform hover:scale-105 transition-transform">
-              <BallotBoxIllustration className="w-12 h-12" />
+            <div className="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-blue-50 border border-blue-100 mb-3 transform hover:scale-105 transition-transform">
+              <BallotBoxIllustration className="w-20 h-20" />
             </div>
             
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
@@ -92,7 +92,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                     setInputName(e.target.value);
                     if (errorMessage) setErrorMessage(null);
                   }}
-                  placeholder="Ketik namamu (contoh: Ahmad)..."
+                  placeholder="Ketik nama lengkap sesuai data pemilih..."
                   className="w-full px-4 py-3 pl-11 rounded-xl text-sm bg-slate-50 border border-slate-200 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   autoComplete="off"
                   autoFocus
@@ -116,33 +116,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
             </button>
           </form>
 
-          {/* Demo helper quick picks */}
-          <div className="mt-6 pt-4 border-t border-slate-100">
-            <div className="flex items-center gap-1 text-[11px] text-slate-400 mb-2">
-              <Sparkles className="w-3 h-3 text-blue-500" />
-              <span>Coba uji nama demo:</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {[
-                { name: 'Ahmad', label: 'Ahmad (Uji Nama Ganda)' },
-                { name: 'Budi', label: 'Budi (Nama Ganda)' },
-                { name: 'Aditya Pratama', label: 'Aditya' },
-                { name: 'Siti', label: 'Siti (Nama Ganda)' }
-              ].map((item) => (
-                <button
-                  key={item.label}
-                  type="button"
-                  onClick={() => {
-                    setInputName(item.name);
-                    setErrorMessage(null);
-                  }}
-                  className="text-[11px] bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-600 px-2 py-0.5 rounded-md transition-colors font-medium"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
         <p className="mt-3 text-center text-[11px] text-slate-500 flex items-center justify-center gap-1">

@@ -89,7 +89,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       {/* Brand Header */}
       <div className="p-4 border-b border-slate-100 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <BallotBoxIllustration className="w-8 h-8" />
+          <BallotBoxIllustration className="w-11 h-11" />
           <div>
             <span className="text-base font-extrabold text-blue-900 leading-tight block">
               SIVOT

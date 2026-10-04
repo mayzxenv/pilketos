@@ -18,7 +18,7 @@ export const SpreadsheetSyncView: React.FC<SpreadsheetSyncViewProps> = ({
   onUpdateSettings
 }) => {
   const [webhookUrl, setWebhookUrl] = useState(
-    settings.spreadsheet_webhook_url || 'https://script.google.com/macros/s/AKfycbx_sivot_school_sync/exec'
+    settings.spreadsheet_webhook_url || ''
   );
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
@@ -231,7 +231,7 @@ export const SpreadsheetSyncView: React.FC<SpreadsheetSyncViewProps> = ({
                     Data Kehadiran & Status Pemilih
                   </span>
                   <span className="text-[11px] text-slate-500">
-                    Memuat 327 siswa (ID, nama, kelas, status sudah/belum, waktu, laptop bilik)
+                    Memuat seluruh data pemilih terdaftar (ID, nama, kelas, status, waktu, dan bilik)
                   </span>
                 </div>
 

@@ -6,14 +6,12 @@ interface ElectionSettingsViewProps {
   settings: ElectionSettings;
   onUpdateSettings: (newSettings: ElectionSettings) => void;
   onClearVotesOnly: () => void;
-  onResetDemo: () => void;
 }
 
 export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
   settings,
   onUpdateSettings,
   onClearVotesOnly,
-  onResetDemo
 }) => {
   const [title, setTitle] = useState(settings.title);
   const [subtitle, setSubtitle] = useState(settings.subtitle);
@@ -359,13 +357,13 @@ export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
           </form>
         </div>
 
-        {/* Network Resilience Testing Tool */}
+        {/* Network resilience configuration */}
         <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 pb-3 border-b border-slate-100 mb-4">
               <WifiOff className="w-4 h-4 text-amber-600" />
               <h2 className="text-base font-bold text-slate-900">
-                Uji Ketahanan Sistem (Simulasi Internet Putus)
+                Ketahanan Koneksi
               </h2>
             </div>
 
@@ -373,7 +371,7 @@ export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <span className="font-bold text-amber-900 block">
-                    Mode Simulasi Gangguan Koneksi:
+                    Mode Gangguan Koneksi:
                   </span>
                   <span className="text-[11px] text-amber-700">
                     {simError ? '🔴 Aktif — Menguji idempotency & recovery' : '🟢 Non-Aktif (Koneksi Normal)'}
@@ -397,18 +395,7 @@ export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
           </div>
 
           <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-            <span className="text-slate-500 font-medium">Dataset Simulasi:</span>
-            <button
-              onClick={() => {
-                if (window.confirm('Reset kembali dataset ke 327 siswa demo awal?')) {
-                  onResetDemo();
-                }
-              }}
-              className="text-xs font-semibold text-blue-600 hover:underline flex items-center gap-1"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Reset Data Demo 327 Siswa</span>
-            </button>
+            <span className="text-slate-500 font-medium">Data pemilih dan suara berasal dari input panitia dan pemilih.</span>
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Student } from '../../types';
-import { Search, Plus, Upload, RotateCcw, Trash2, Edit2, Filter, UserCheck, CheckCircle2, Clock, X } from 'lucide-react';
+import { Search, Plus, Upload, Trash2, Edit2, Filter, UserCheck, CheckCircle2, Clock, X } from 'lucide-react';
 
 interface VoterManageViewProps {
   students: Student[];
@@ -8,7 +8,6 @@ interface VoterManageViewProps {
   onUpdateStudent: (student: Student) => void;
   onDeleteStudent: (studentId: string) => void;
   onOpenImportCsv: () => void;
-  onResetDemo: () => void;
   onClearVotesOnly: () => void;
 }
 
@@ -18,7 +17,6 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
   onUpdateStudent,
   onDeleteStudent,
   onOpenImportCsv,
-  onResetDemo,
   onClearVotesOnly
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -121,7 +119,7 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
             Manajemen Data Pemilih ({students.length} Siswa)
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Kelola identitas siswa terdaftar, import file CSV asli, atau reset data simulasi.
+            Kelola identitas siswa terdaftar dengan input manual atau import data resmi sekolah.
           </p>
         </div>
 
@@ -142,14 +140,6 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
             <span>Upload Excel / CSV / Spreadsheet</span>
           </button>
 
-          <button
-            onClick={onResetDemo}
-            className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-xl border border-blue-200 transition-colors flex items-center gap-1.5 cursor-pointer"
-            title="Isi otomatis 327 siswa demo lengkap"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Isi 327 Siswa Otomatis</span>
-          </button>
         </div>
       </div>
 
@@ -163,7 +153,7 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
               setSearchQuery(e.target.value);
               setCurrentPage(1);
             }}
-            placeholder="Cari berdasarkan nama atau student_id (contoh: Ahmad, Budi)..."
+            placeholder="Cari berdasarkan nama atau student_id..."
             className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800"
           />
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />

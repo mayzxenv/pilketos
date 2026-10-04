@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => onNavigate('student')}
             className="flex items-center gap-2.5 text-left group transition-transform focus:outline-none"
           >
-            <BallotBoxIllustration className="w-9 h-9 transform group-hover:scale-105 transition-transform" />
+            <BallotBoxIllustration className="w-12 h-12 transform group-hover:scale-105 transition-transform" />
             <div>
               <span className="text-xl font-bold tracking-tight text-blue-900 block leading-tight">
                 SIVOT
@@ -87,18 +87,24 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="text-[11px] text-slate-500 pl-2 hidden md:inline font-medium">
                 Bilik:
               </span>
-              <select
-                value={activeDeviceId}
-                onChange={(e) => onDeviceChange(e.target.value)}
-                className="text-xs font-semibold text-slate-800 bg-white border border-slate-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
-                title="Pilih Laptop Bilik Voting"
-              >
-                {devices.map((device) => (
-                  <option key={device.id} value={device.id}>
-                    {device.name}
-                  </option>
-                ))}
-              </select>
+              {devices.length > 0 ? (
+                <select
+                  value={activeDeviceId}
+                  onChange={(e) => onDeviceChange(e.target.value)}
+                  className="text-xs font-semibold text-slate-800 bg-white border border-slate-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                  title="Pilih Laptop Bilik Voting"
+                >
+                  {devices.map((device) => (
+                    <option key={device.id} value={device.id}>
+                      {device.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="text-[11px] text-slate-500 px-2">
+                  Bilik belum dikonfigurasi
+                </span>
+              )}
               <div className="flex items-center gap-1 text-[11px] font-medium text-emerald-700 pr-1.5" title="Koneksi laptop aktif">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span className="hidden lg:inline">Aktif</span>

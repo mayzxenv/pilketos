@@ -8,8 +8,6 @@ import {
   VoteRequest
 } from '../types';
 import {
-  generateInitialStudents,
-  generateInitialVotes,
   INITIAL_AUDIT_LOGS,
   INITIAL_CANDIDATES,
   INITIAL_DEVICES,
@@ -17,14 +15,14 @@ import {
 } from '../data/initialData';
 
 const STORAGE_KEYS = {
-  STUDENTS: 'sivot_students_v2',
+  STUDENTS: 'sivot_students_v3',
   CANDIDATES: 'sivot_candidates_v2',
-  VOTES: 'sivot_votes_v2',
-  SETTINGS: 'sivot_settings_v2',
-  DEVICES: 'sivot_devices_v2',
-  AUDIT: 'sivot_audit_logs_v2',
-  IDEMPOTENCY: 'sivot_idempotency_v2',
-  ACTIVE_DEVICE_ID: 'sivot_active_device_id_v2'
+  VOTES: 'sivot_votes_v3',
+  SETTINGS: 'sivot_settings_v3',
+  DEVICES: 'sivot_devices_v3',
+  AUDIT: 'sivot_audit_logs_v3',
+  IDEMPOTENCY: 'sivot_idempotency_v3',
+  ACTIVE_DEVICE_ID: 'sivot_active_device_id_v3'
 };
 
 // Cross-tab broadcast channel
@@ -107,9 +105,8 @@ export const StorageService = {
   getStudents(): Student[] {
     const stored = getItem<Student[] | null>(STORAGE_KEYS.STUDENTS, null);
     if (!stored || !Array.isArray(stored) || stored.length === 0) {
-      const initial = generateInitialStudents();
-      setItem(STORAGE_KEYS.STUDENTS, initial);
-      return initial;
+      setItem(STORAGE_KEYS.STUDENTS, []);
+      return [];
     }
     return stored;
   },
@@ -142,9 +139,8 @@ export const StorageService = {
   getVotes(): VoteRecord[] {
     const stored = getItem<VoteRecord[] | null>(STORAGE_KEYS.VOTES, null);
     if (!stored || !Array.isArray(stored)) {
-      const initial = generateInitialVotes(183);
-      setItem(STORAGE_KEYS.VOTES, initial);
-      return initial;
+      setItem(STORAGE_KEYS.VOTES, []);
+      return [];
     }
     return stored;
   },
@@ -233,21 +229,6 @@ export const StorageService = {
     const map = this.getIdempotencyMap();
     map[record.request_id] = record;
     setItem(STORAGE_KEYS.IDEMPOTENCY, map);
-  },
-
-  // Reset to initial demo state
-  resetToDemo(): void {
-    const freshStudents = generateInitialStudents();
-    const freshVotes = generateInitialVotes(183);
-    setItem(STORAGE_KEYS.STUDENTS, freshStudents);
-    setItem(STORAGE_KEYS.CANDIDATES, INITIAL_CANDIDATES);
-    setItem(STORAGE_KEYS.VOTES, freshVotes);
-    setItem(STORAGE_KEYS.SETTINGS, INITIAL_SETTINGS);
-    setItem(STORAGE_KEYS.DEVICES, INITIAL_DEVICES);
-    setItem(STORAGE_KEYS.AUDIT, INITIAL_AUDIT_LOGS);
-    setItem(STORAGE_KEYS.IDEMPOTENCY, {});
-    this.addAuditLog('SYSTEM_RESET_DEMO', 'Admin', 'Sistem berhasil direset ke dataset demo 327 siswa.', 'warning');
-    broadcastEvent('DATASET_RESET', null);
   },
 
   // Wipe all voting results to start a pristine fresh election session

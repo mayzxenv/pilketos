@@ -154,11 +154,6 @@ export default function App() {
     setStudents(finalStudents);
   };
 
-  const handleResetDemo = () => {
-    StorageService.resetToDemo();
-    reloadAllData();
-  };
-
   const handleClearVotesOnly = () => {
     if (window.confirm('PERINGATAN: Seluruh suara dan riwayat pemilihan akan dikosongkan ke 0 untuk memulai sesi baru. Lanjutkan?')) {
       StorageService.clearElectionDataOnly();
@@ -238,7 +233,6 @@ export default function App() {
               onUpdateStudent={handleUpdateStudent}
               onDeleteStudent={handleDeleteStudent}
               onImportStudents={handleImportStudents}
-              onResetDemo={handleResetDemo}
               onClearVotesOnly={handleClearVotesOnly}
               onAddCandidate={handleAddCandidate}
               onUpdateCandidate={handleUpdateCandidate}

@@ -33,7 +33,6 @@ interface AdminLayoutProps {
   onUpdateStudent: (s: Student) => void;
   onDeleteStudent: (id: string) => void;
   onImportStudents: (students: Student[], mode: 'replace' | 'merge') => void;
-  onResetDemo: () => void;
   onClearVotesOnly: () => void;
   onAddCandidate: (c: Candidate) => void;
   onUpdateCandidate: (c: Candidate) => void;
@@ -54,7 +53,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   onUpdateStudent,
   onDeleteStudent,
   onImportStudents,
-  onResetDemo,
   onClearVotesOnly,
   onAddCandidate,
   onUpdateCandidate,
@@ -67,7 +65,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const [currentMenu, setCurrentMenu] = useState<AdminMenuKey>('dashboard');
   const [isImportCsvOpen, setIsImportCsvOpen] = useState(false);
 
-  // If not authenticated, show dedicated Admin Login Page with demo credentials
+  // Require the configured administrator account before showing election controls.
   if (!isAdminAuthenticated) {
     return (
       <AdminLoginPage
@@ -118,7 +116,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             settings={settings}
             onUpdateSettings={onUpdateSettings}
             onClearVotesOnly={onClearVotesOnly}
-            onResetDemo={onResetDemo}
           />
         )}
 
@@ -138,7 +135,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             onUpdateStudent={onUpdateStudent}
             onDeleteStudent={onDeleteStudent}
             onOpenImportCsv={() => setIsImportCsvOpen(true)}
-            onResetDemo={onResetDemo}
             onClearVotesOnly={onClearVotesOnly}
           />
         )}

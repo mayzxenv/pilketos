@@ -1,5 +1,6 @@
 import React from 'react';
 import confetti from 'canvas-confetti';
+import ballotBoxImage from '../../assets/images/icon.webp';
 
 export function fireSchoolConfetti() {
   try {
@@ -103,16 +104,5 @@ export const SchoolBagIllustration: React.FC<{ className?: string }> = ({ classN
 );
 
 export const BallotBoxIllustration: React.FC<{ className?: string }> = ({ className = 'w-12 h-12' }) => (
-  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <rect x="10" y="24" width="44" height="34" rx="6" fill="#EFF6FF" stroke="#2563EB" strokeWidth="2.5" />
-    <path d="M6 24H58V18C58 15 55 13 52 13H12C9 13 6 15 6 18V24Z" fill="#3B82F6" stroke="#1D4ED8" strokeWidth="2" />
-    {/* Ballot slot */}
-    <rect x="22" y="17" width="20" height="3" rx="1.5" fill="#1E3A8A" />
-    {/* Paper ballot inserting */}
-    <path d="M25 8L39 8L37 19L27 19L25 8Z" fill="#F8FAFC" stroke="#94A3B8" strokeWidth="1.5" />
-    <path d="M28 12L31 15L36 10" stroke="#10B981" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    {/* Checkmark badge on front */}
-    <circle cx="32" cy="41" r="10" fill="#10B981" />
-    <path d="M28 41L31 44L36 38" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
+  <img src={ballotBoxImage} alt="Kotak suara SIVOT" className={`${className} object-contain`} />
 );
