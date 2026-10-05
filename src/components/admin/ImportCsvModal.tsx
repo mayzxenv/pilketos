@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Student } from '../../types';
-import { Upload, AlertCircle, CheckCircle, FileText, Download, X, Sparkles, FileSpreadsheet, ClipboardCopy } from 'lucide-react';
+import { Upload, AlertCircle, CheckCircle, FileText, Download, X, FileSpreadsheet, ClipboardCopy } from 'lucide-react';
 
 interface ImportCsvModalProps {
   onClose: () => void;
@@ -141,36 +141,6 @@ export const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ onClose, onImpor
     onImportConfirm(validStudents, importMode);
   };
 
-  // Instant 1-Click Generator (for lazy admin testing as requested!)
-  const handleGenerate300StudentsAuto = () => {
-    const classes = ['7A', '7B', '7C', '7D', '8A', '8B', '8C', '8D', '9A', '9B', '9C'];
-    const names = [
-      'Ahmad', 'Ahmad', 'Ahmad', 'Budi', 'Budi', 'Citra', 'Citra', 'Dimas', 'Eka',
-      'Farhan', 'Gita', 'Hafiz', 'Indah', 'Joko', 'Kevin', 'Laras', 'Mega', 'Naufal',
-      'Putri', 'Putri', 'Rafi', 'Rizky', 'Rizky', 'Siti', 'Siti', 'Taufik', 'Wahyu',
-      'Yoga', 'Zaki', 'Aditya', 'Bayu', 'Chelsea', 'Danu', 'Fadli', 'Gilang', 'Intan'
-    ];
-    const lastNames = ['Pratama', 'Santoso', 'Wijaya', 'Saputra', 'Kusuma', 'Setiawan', 'Hidayat', 'Wulandari'];
-
-    const lines: string[] = ['student_id\tnama\tkelas'];
-    let count = 1;
-
-    for (let c = 0; c < classes.length; c++) {
-      const cls = classes[c];
-      for (let s = 0; s < 30; s++) {
-        const id = `STU-${String(count).padStart(4, '0')}`;
-        const fName = names[(count * 3) % names.length];
-        const lName = (fName === 'Ahmad' || fName === 'Budi' || fName === 'Siti') ? '' : ` ${lastNames[(count * 5) % lastNames.length]}`;
-        lines.push(`${id}\t${fName}${lName}\t${cls}`);
-        count++;
-      }
-    }
-
-    const generated = lines.join('\n');
-    setCsvText(generated);
-    parseRawContent(generated);
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 flex flex-col max-h-[90vh]">
@@ -199,23 +169,6 @@ export const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ onClose, onImpor
 
         {/* Modal Body */}
         <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
-          {/* Quick Instant Button (For user who said "gw kadang males isi nama siswa satu satu") */}
-          <div className="p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-xs text-blue-900">
-              <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
-              <span>
-                <strong>Malas mengisi satu-satu?</strong> Klik tombol di samping untuk langsung mengisi 320+ nama siswa secara instan!
-              </span>
-            </div>
-            <button
-              type="button"
-              onClick={handleGenerate300StudentsAuto}
-              className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all whitespace-nowrap cursor-pointer shrink-0"
-            >
-              Isi 320+ Siswa Otomatis
-            </button>
-          </div>
-
           {/* File Upload Zone */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-300">
             <div className="flex items-center gap-3">

@@ -14,7 +14,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
   const [duplicateMatches, setDuplicateMatches] = useState<Student[]>([]);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
+  const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setDuplicateMatches([]);
@@ -25,24 +25,27 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
       return;
     }
 
-    const matches = VotingEngine.findStudentsByName(trimmed);
+    try {
+      const matches = await VotingEngine.findStudentsByName(trimmed);
 
-    if (matches.length === 0) {
-      setErrorMessage('Nama belum terdaftar sebagai pemilih. Silakan hubungi panitia pemungutan suara.');
-      return;
-    }
-
-    if (matches.length === 1) {
-      const student = matches[0];
-      if (student.status_voted) {
-        setErrorMessage(`Halo ${student.nama} (${student.kelas}), hak suaramu sudah digunakan. Terima kasih telah memilih!`);
+      if (matches.length === 0) {
+        setErrorMessage('Nama belum terdaftar sebagai pemilih. Silakan hubungi panitia pemungutan suara.');
         return;
       }
-      onLoginSuccess(student);
-    } else {
-      // Multiple matches found!
-      setDuplicateMatches(matches);
-      setShowDuplicateModal(true);
+
+      if (matches.length === 1) {
+        const student = matches[0];
+        if (student.status_voted) {
+          setErrorMessage(`Halo ${student.nama} (${student.kelas}), hak suaramu sudah digunakan. Terima kasih telah memilih!`);
+          return;
+        }
+        onLoginSuccess(student);
+      } else {
+        setDuplicateMatches(matches);
+        setShowDuplicateModal(true);
+      }
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Gagal terhubung ke server pemilihan.');
     }
   };
 

@@ -10,9 +10,13 @@ interface DeviceStatusViewProps {
 export const DeviceStatusView: React.FC<DeviceStatusViewProps> = ({ devices }) => {
   const [pingingId, setPingingId] = useState<string | null>(null);
 
-  const handlePing = (deviceId: string) => {
+  const handlePing = async (deviceId: string) => {
     setPingingId(deviceId);
-    VotingEngine.sendDeviceHeartbeat(deviceId);
+    try {
+      await VotingEngine.sendDeviceHeartbeat(deviceId);
+    } catch (error) {
+      console.error('Heartbeat perangkat gagal:', error);
+    }
     setTimeout(() => {
       setPingingId(null);
     }, 600);

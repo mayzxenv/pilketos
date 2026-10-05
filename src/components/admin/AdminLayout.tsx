@@ -41,6 +41,7 @@ interface AdminLayoutProps {
   onUpdateSettings: (s: ElectionSettings) => void;
   onOpenDisplayMode: () => void;
   onExitAdmin: () => void;
+  onAdminAuthenticated: () => void;
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
@@ -60,7 +61,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   onDeleteCandidate,
   onUpdateSettings,
   onOpenDisplayMode,
-  onExitAdmin
+  onExitAdmin,
+  onAdminAuthenticated
 }) => {
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [currentMenu, setCurrentMenu] = useState<AdminMenuKey>('dashboard');
@@ -70,7 +72,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   if (!isAdminAuthenticated) {
     return (
       <AdminLoginPage
-        onLoginSuccess={() => setIsAdminAuthenticated(true)}
+        onLoginSuccess={() => {
+          setIsAdminAuthenticated(true);
+          onAdminAuthenticated();
+        }}
         onBackToStudent={onExitAdmin}
       />
     );

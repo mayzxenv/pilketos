@@ -38,6 +38,29 @@ tetap dapat dibuka atau di-refresh langsung.
 
 ## Batasan penting sebelum dipakai pemilihan sungguhan
 
+**Alur aplikasi sekarang sudah memakai Supabase sebagai sumber data utama.** Pencarian
+DPT, submit suara transaksional, CRUD admin, dashboard, reset pemilu, dan audit log
+terhubung ke database terpusat. `localStorage` hanya tersisa sebagai nilai awal sebelum
+data remote selesai dimuat dan untuk menyimpan pilihan perangkat lokal.
+
+Setelah perubahan schema, jalankan ulang seluruh isi `supabase/schema.sql` di Supabase
+SQL Editor. Script tersebut menambahkan RPC pencarian DPT yang aman dan memperketat
+akses tabel siswa. Pastikan migration dijalankan pada project yang sama dengan
+`VITE_SUPABASE_URL`.
+
+Sebelum pemilu sungguhan, tetap lakukan simulasi end-to-end dengan beberapa perangkat,
+uji backup/restore, dan verifikasi RLS di project produksi. Aplikasi tidak dapat
+memvalidasi koneksi atau isi database Supabase sampai environment variable dan schema
+produksi sudah benar-benar dipasang.
+
+Sebelum hari pemilihan, panitia juga perlu:
+
+- menjalankan dan menguji schema Supabase serta RLS di project produksi;
+- memastikan login admin, import DPT, dan sinkronisasi data berjalan end-to-end;
+- menguji pencegahan double-vote dan konkurensi dari beberapa bilik;
+- menyiapkan backup, akun admin terpisah, dan prosedur pemulihan;
+- melakukan simulasi penuh dengan data uji sebelum membuka status pemilihan `ACTIVE`.
+
 ## Setup Supabase
 
 1. Buat project di Supabase.

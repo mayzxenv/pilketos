@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Candidate, ElectionSettings, Student } from '../../types';
 import { FloatingSchoolElements } from '../common/SchoolDecorations';
 import { HERO_IMAGE } from '../../data/initialData';
 import { CheckCircle2, ArrowRight, Award, UserCheck, ShieldAlert, LogOut, Sparkles } from 'lucide-react';
+import { playWelcomeSound } from '../../services/sound';
 
 interface WelcomeViewProps {
   student: Student;
@@ -19,6 +20,10 @@ export const WelcomeView: React.FC<WelcomeViewProps> = ({
   onStartVoting,
   onLogout
 }) => {
+  useEffect(() => {
+    playWelcomeSound();
+  }, []);
+
   return (
     <div className="relative h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-hidden p-3 sm:p-5 lg:p-6 flex items-center justify-center bg-gradient-to-b from-blue-50/50 via-slate-50 to-indigo-50/30">
       <FloatingSchoolElements variant="minimal" />

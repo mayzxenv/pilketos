@@ -84,8 +84,19 @@ alter table public.votes enable row level security;
 alter table public.vote_requests enable row level security;
 alter table public.audit_logs enable row level security;
 
-create policy "public can search students"
-  on public.students for select to anon, authenticated using (true);
+drop policy if exists "public can search students" on public.students;
+drop policy if exists "authenticated admins read students" on public.students;
+drop policy if exists "authenticated admins manage students" on public.students;
+drop policy if exists "public can read active candidates" on public.candidates;
+drop policy if exists "authenticated admins manage candidates" on public.candidates;
+drop policy if exists "public can read settings" on public.election_settings;
+drop policy if exists "authenticated admins manage settings" on public.election_settings;
+drop policy if exists "authenticated admins manage devices" on public.voting_devices;
+drop policy if exists "authenticated admins read votes" on public.votes;
+drop policy if exists "authenticated admins manage vote requests" on public.vote_requests;
+drop policy if exists "authenticated admins manage audit logs" on public.audit_logs;
+create policy "authenticated admins read students"
+  on public.students for select to authenticated using (true);
 create policy "authenticated admins manage students"
   on public.students for all to authenticated using (true) with check (true);
 create policy "public can read active candidates"
@@ -105,6 +116,28 @@ create policy "authenticated admins manage vote requests"
 create policy "authenticated admins manage audit logs"
   on public.audit_logs for all to authenticated using (true) with check (true);
 
+create or replace function public.search_students_by_name(p_query text)
+returns table (
+  student_id text,
+  nama text,
+  kelas text,
+  status_voted boolean,
+  voted_at timestamptz,
+  device_id text
+)
+language sql
+security definer
+set search_path = public
+as $$
+  select s.student_id, s.nama, s.kelas, s.status_voted, s.voted_at, s.device_id
+  from public.students s
+  where s.nama ilike '%' || trim(p_query) || '%'
+  order by s.nama;
+$$;
+
+revoke all on function public.search_students_by_name(text) from public;
+grant execute on function public.search_students_by_name(text) to anon, authenticated;
+
 create or replace function public.submit_vote(
   p_student_id text,
   p_candidate_id text,
@@ -121,11 +154,28 @@ as $$
 declare
   v_student public.students;
   v_settings public.election_settings;
+  v_existing_request public.vote_requests;
   v_now timestamptz := now();
 begin
   select * into v_settings from public.election_settings where id = true for share;
+  if not found then
+    raise exception 'ELECTION_SETTINGS_NOT_FOUND';
+  end if;
   if v_settings.status <> 'ACTIVE' then
     raise exception 'ELECTION_NOT_ACTIVE';
+  end if;
+
+  select * into v_existing_request
+  from public.vote_requests
+  where request_id = p_request_id
+  for share;
+  if found and v_existing_request.status = 'SUCCESS' then
+    return jsonb_build_object(
+      'success', true,
+      'already_voted', true,
+      'receipt_id', v_existing_request.result_message,
+      'timestamp', v_existing_request.created_at
+    );
   end if;
 
   select * into v_student from public.students where student_id = p_student_id for update;
@@ -136,16 +186,18 @@ begin
     where id = p_candidate_id and status = 'active'
   ) then raise exception 'CANDIDATE_NOT_FOUND'; end if;
 
-  if exists (select 1 from public.vote_requests where request_id = p_request_id and status = 'SUCCESS') then
-    return jsonb_build_object('success', true, 'already_voted', true);
-  end if;
-
   insert into public.votes (id, candidate_id, created_at, device_id, request_id, ballot_hash, stage)
-  values ('v-' || gen_random_uuid()::text, p_candidate_id, v_now, p_device_id, p_request_id, p_ballot_hash, p_stage);
+  values ('v-' || gen_random_uuid()::text, p_candidate_id, v_now, p_device_id, p_request_id, p_ballot_hash, v_settings.stage);
 
   update public.students
   set status_voted = true, voted_at = v_now, device_id = p_device_id
   where student_id = p_student_id;
+
+  update public.voting_devices
+  set status = 'online',
+      last_heartbeat = v_now,
+      votes_processed = votes_processed + 1
+  where id = p_device_id;
 
   insert into public.vote_requests (request_id, student_id, candidate_id, device_id, created_at, status, result_message)
   values (p_request_id, p_student_id, p_candidate_id, p_device_id, v_now, 'SUCCESS', p_ballot_hash)
@@ -157,3 +209,35 @@ $$;
 
 revoke all on function public.submit_vote(text, text, text, text, text, text) from public;
 grant execute on function public.submit_vote(text, text, text, text, text, text) to anon, authenticated;
+
+create or replace function public.reset_election_data()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.role() <> 'authenticated' then
+    raise exception 'ADMIN_AUTH_REQUIRED';
+  end if;
+
+  delete from public.votes;
+  delete from public.vote_requests;
+  update public.students
+  set status_voted = false, voted_at = null, device_id = null;
+  update public.voting_devices
+  set votes_processed = 0, status = 'idle';
+  insert into public.audit_logs (id, timestamp, action, actor, details, severity)
+  values (
+    'log-' || gen_random_uuid()::text,
+    now(),
+    'ELECTION_CLEARED',
+    auth.uid()::text,
+    'Seluruh suara dan status pemilih direset untuk sesi pemilihan baru.',
+    'critical'
+  );
+end;
+$$;
+
+revoke all on function public.reset_election_data() from public;
+grant execute on function public.reset_election_data() to authenticated;

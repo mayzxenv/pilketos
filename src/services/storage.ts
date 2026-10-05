@@ -15,7 +15,7 @@ import {
 } from '../data/initialData';
 
 const STORAGE_KEYS = {
-  STUDENTS: 'sivot_students_v3',
+  STUDENTS: 'sivot_students_v4',
   CANDIDATES: 'sivot_candidates_v2',
   VOTES: 'sivot_votes_v3',
   SETTINGS: 'sivot_settings_v3',

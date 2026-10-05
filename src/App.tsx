@@ -17,6 +17,8 @@ import { ConfirmationModal } from './components/student/ConfirmationModal';
 import { SuccessView } from './components/student/SuccessView';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { PIDDisplayView } from './components/display/PIDDisplayView';
+import { playClickSound } from './services/sound';
+import { RemoteStorageService } from './services/remoteStorage';
 
 export default function App() {
   // Navigation View: 'student' | 'admin' | 'display'
@@ -47,30 +49,52 @@ export default function App() {
   const [lastVoteResponse, setLastVoteResponse] = useState<VoteSubmissionResponse | null>(null);
 
   // Sync state loader
-  const reloadAllData = useCallback(() => {
-    setStudents(StorageService.getStudents());
-    setCandidates(StorageService.getCandidates());
-    setVotes(StorageService.getVotes());
-    setSettings(StorageService.getSettings());
-    setDevices(StorageService.getDevices());
-    setAuditLogs(StorageService.getAuditLogs());
-    setActiveDeviceId(StorageService.getActiveDeviceId());
+  const reloadAllData = useCallback(async (includeAdminData = false) => {
+    const [remoteCandidates, remoteSettings] = await Promise.all([
+      RemoteStorageService.getCandidates(),
+      RemoteStorageService.getSettings()
+    ]);
+    setCandidates(remoteCandidates);
+    setSettings(remoteSettings);
+
+    if (includeAdminData) {
+      const [remoteStudents, remoteVotes, remoteDevices, remoteAuditLogs] = await Promise.all([
+        RemoteStorageService.getStudents(),
+        RemoteStorageService.getVotes(),
+        RemoteStorageService.getDevices(),
+        RemoteStorageService.getAuditLogs()
+      ]);
+      setStudents(remoteStudents);
+      setVotes(remoteVotes);
+      setDevices(remoteDevices);
+      setAuditLogs(remoteAuditLogs);
+    }
   }, []);
+
+  useEffect(() => {
+    void reloadAllData().catch((error: unknown) => {
+      console.error('Gagal memuat data pemilu dari Supabase:', error);
+    });
+  }, [reloadAllData]);
 
   // Listen to realtime events across windows
   useEffect(() => {
     const unsubscribe = subscribeToRealtimeEvents(() => {
-      reloadAllData();
+      void reloadAllData().catch((error: unknown) => {
+        console.error('Gagal menyinkronkan data pemilu:', error);
+      });
     });
     return () => unsubscribe();
   }, [reloadAllData]);
 
-  // Periodic heartbeat updater for devices
+  // Keep interaction feedback consistent across student, admin, and display screens.
   useEffect(() => {
-    const timer = setInterval(() => {
-      setDevices(StorageService.getDevices());
-    }, 8000);
-    return () => clearInterval(timer);
+    const handleDocumentClick = () => {
+      playClickSound();
+    };
+
+    document.addEventListener('click', handleDocumentClick, true);
+    return () => document.removeEventListener('click', handleDocumentClick, true);
   }, []);
 
   // URL sync helper
@@ -101,7 +125,7 @@ export default function App() {
     setIsConfirmModalOpen(false);
     setLastVoteResponse(response);
     setStudentStep('success');
-    reloadAllData();
+    void reloadAllData();
   };
 
   const handleFinishAndReset = () => {
@@ -113,84 +137,80 @@ export default function App() {
   };
 
   // Admin Mutations
-  const handleAddStudent = (newStudent: Student) => {
-    const updated = [...students, newStudent];
-    StorageService.saveStudents(updated);
-    StorageService.addAuditLog('STUDENT_ADDED', 'Admin', `Menambahkan siswa: ${newStudent.nama} (${newStudent.kelas})`);
-    setStudents(updated);
+  const handleAddStudent = async (newStudent: Student) => {
+    await RemoteStorageService.saveStudents([...students, newStudent]);
+    await RemoteStorageService.addAuditLog('STUDENT_ADDED', 'Admin', `Menambahkan siswa: ${newStudent.nama} (${newStudent.kelas})`);
+    await reloadAllData(true);
   };
 
-  const handleUpdateStudent = (updatedStudent: Student) => {
-    const updated = students.map((s) => (s.student_id === updatedStudent.student_id ? updatedStudent : s));
-    StorageService.saveStudents(updated);
-    StorageService.addAuditLog('STUDENT_UPDATED', 'Admin', `Memperbarui siswa: ${updatedStudent.nama} (${updatedStudent.kelas})`);
-    setStudents(updated);
+  const handleUpdateStudent = async (updatedStudent: Student) => {
+    await RemoteStorageService.saveStudents([updatedStudent]);
+    await RemoteStorageService.addAuditLog('STUDENT_UPDATED', 'Admin', `Memperbarui siswa: ${updatedStudent.nama} (${updatedStudent.kelas})`);
+    await reloadAllData(true);
   };
 
-  const handleDeleteStudent = (studentId: string) => {
-    const updated = students.filter((s) => s.student_id !== studentId);
-    StorageService.saveStudents(updated);
-    StorageService.addAuditLog('STUDENT_DELETED', 'Admin', `Menghapus student_id: ${studentId}`);
-    setStudents(updated);
+  const handleDeleteStudent = async (studentId: string) => {
+    await RemoteStorageService.deleteStudent(studentId);
+    await RemoteStorageService.addAuditLog('STUDENT_DELETED', 'Admin', `Menghapus student_id: ${studentId}`);
+    await reloadAllData(true);
   };
 
-  const handleImportStudents = (imported: Student[], mode: 'replace' | 'merge') => {
-    let finalStudents: Student[] = [];
-    if (mode === 'replace') {
-      finalStudents = imported;
-    } else {
-      const map = new Map<string, Student>();
-      students.forEach((s) => map.set(s.student_id, s));
-      imported.forEach((s) => map.set(s.student_id, s));
+  const handleImportStudents = async (imported: Student[], mode: 'replace' | 'merge') => {
+    let finalStudents = imported;
+    if (mode === 'merge') {
+      const map = new Map(students.map((student) => [student.student_id, student]));
+      imported.forEach((student) => map.set(student.student_id, student));
       finalStudents = Array.from(map.values());
     }
-    StorageService.saveStudents(finalStudents);
-    StorageService.addAuditLog(
+    if (mode === 'replace') {
+      await RemoteStorageService.replaceStudents(finalStudents);
+    } else {
+      await RemoteStorageService.saveStudents(finalStudents);
+    }
+    await RemoteStorageService.addAuditLog(
       'STUDENTS_IMPORTED_CSV',
       'Admin',
       `Import ${imported.length} data siswa dengan metode ${mode.toUpperCase()}. Total DPT kini: ${finalStudents.length}.`,
       'warning'
     );
-    setStudents(finalStudents);
+    await reloadAllData(true);
   };
 
   const handleClearVotesOnly = () => {
     if (window.confirm('PERINGATAN: Seluruh suara dan riwayat pemilihan akan dikosongkan ke 0 untuk memulai sesi baru. Lanjutkan?')) {
-      StorageService.clearElectionDataOnly();
-      reloadAllData();
+      void RemoteStorageService.clearElectionDataOnly()
+        .then(() => reloadAllData(true))
+        .catch((error: unknown) => console.error('Gagal mereset pemilu:', error));
     }
   };
 
-  const handleAddCandidate = (cand: Candidate) => {
-    const updated = [...candidates, cand];
-    StorageService.saveCandidates(updated);
-    StorageService.addAuditLog('CANDIDATE_ADDED', 'Admin', `Menambahkan Calon ${cand.nomorUrut}: ${cand.nama}`);
-    setCandidates(updated);
+  const handleAddCandidate = async (cand: Candidate) => {
+    await RemoteStorageService.saveCandidates([...candidates, cand]);
+    await RemoteStorageService.addAuditLog('CANDIDATE_ADDED', 'Admin', `Menambahkan Calon ${cand.nomorUrut}: ${cand.nama}`);
+    await reloadAllData(true);
   };
 
-  const handleUpdateCandidate = (cand: Candidate) => {
-    const updated = candidates.map((c) => (c.id === cand.id ? cand : c));
-    StorageService.saveCandidates(updated);
-    StorageService.addAuditLog('CANDIDATE_UPDATED', 'Admin', `Memperbarui profil Calon ${cand.nomorUrut}: ${cand.nama}`);
-    setCandidates(updated);
+  const handleUpdateCandidate = async (cand: Candidate) => {
+    await RemoteStorageService.saveCandidates([cand]);
+    await RemoteStorageService.addAuditLog('CANDIDATE_UPDATED', 'Admin', `Memperbarui profil Calon ${cand.nomorUrut}: ${cand.nama}`);
+    await reloadAllData(true);
   };
 
-  const handleDeleteCandidate = (candId: string) => {
-    const updated = candidates.filter((c) => c.id !== candId);
-    StorageService.saveCandidates(updated);
-    StorageService.addAuditLog('CANDIDATE_DELETED', 'Admin', `Menghapus kandidat ID: ${candId}`);
-    setCandidates(updated);
+  const handleDeleteCandidate = async (candId: string) => {
+    await RemoteStorageService.deleteCandidate(candId);
+    await RemoteStorageService.addAuditLog('CANDIDATE_DELETED', 'Admin', `Menghapus kandidat ID: ${candId}`);
+    await reloadAllData(true);
   };
 
-  const handleUpdateSettings = (newSettings: ElectionSettings) => {
-    StorageService.saveSettings(newSettings);
-    StorageService.addAuditLog(
+  const handleUpdateSettings = async (newSettings: ElectionSettings) => {
+    await RemoteStorageService.saveSettings(newSettings);
+    await RemoteStorageService.addAuditLog(
       'SETTINGS_MODIFIED',
       'Admin',
       `Pengaturan diperbarui. Status pemilihan: ${newSettings.status}`,
       'info'
     );
-    setSettings(newSettings);
+    await reloadAllData(true);
   };
 
   const handleDeviceChange = (devId: string) => {
@@ -240,6 +260,11 @@ export default function App() {
               onUpdateSettings={handleUpdateSettings}
               onOpenDisplayMode={() => navigateTo('display')}
               onExitAdmin={() => navigateTo('student')}
+              onAdminAuthenticated={() => {
+                void reloadAllData(true).catch((error: unknown) => {
+                  console.error('Gagal memuat data admin dari Supabase:', error);
+                });
+              }}
             />
           ) : (
             /* Student Voting View Flow */
