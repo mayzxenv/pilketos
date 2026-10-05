@@ -76,6 +76,24 @@ create table if not exists public.audit_logs (
   severity text not null check (severity in ('info', 'warning', 'critical'))
 );
 
+insert into public.election_settings (
+  id, title, subtitle, school_name, status, stage, academic_year,
+  start_time, end_time, network_simulation_error
+)
+values (
+  true,
+  'Pemilihan Ketua OSIS DIGIVOS7',
+  'Digital Voting OSIS',
+  'SMPN 7 Bangkalan',
+  'NOT_STARTED',
+  'PUTARAN_1',
+  '2026/2027',
+  now(),
+  now() + interval '8 hours',
+  false
+)
+on conflict (id) do nothing;
+
 alter table public.students enable row level security;
 alter table public.candidates enable row level security;
 alter table public.election_settings enable row level security;

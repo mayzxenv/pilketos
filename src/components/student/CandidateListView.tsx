@@ -3,6 +3,7 @@ import { Candidate, Student } from '../../types';
 import { FloatingSchoolElements } from '../common/SchoolDecorations';
 import { ArrowLeft, ArrowRight, Info, X, Check, Award } from 'lucide-react';
 import { speakInstruction } from '../../services/sound';
+import { VOICE_MESSAGES } from '../../assets/voiceMessages';
 
 interface CandidateListViewProps {
   student: Student;
@@ -20,7 +21,7 @@ export const CandidateListView: React.FC<CandidateListViewProps> = ({
   const [detailModalCandidate, setDetailModalCandidate] = useState<Candidate | null>(null);
 
   useEffect(() => {
-    speakInstruction('Silahkan memilih kandidat.');
+    speakInstruction(VOICE_MESSAGES.chooseCandidate);
   }, []);
 
   return (

@@ -61,7 +61,10 @@ export const RemoteStorageService = {
   },
 
   async deleteCandidate(candidateId: string): Promise<void> {
-    const { error } = await supabase().from('candidates').delete().eq('id', candidateId);
+    const { error } = await supabase()
+      .from('candidates')
+      .update({ status: 'inactive' })
+      .eq('id', candidateId);
     if (error) throw new Error(`Gagal menghapus kandidat: ${error.message}`);
   },
 

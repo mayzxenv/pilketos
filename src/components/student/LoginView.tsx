@@ -4,6 +4,7 @@ import { VotingEngine } from '../../services/votingEngine';
 import { FloatingSchoolElements, BallotBoxIllustration } from '../common/SchoolDecorations';
 import { Search, UserCheck, AlertCircle, ChevronRight, School } from 'lucide-react';
 import { speakInstruction } from '../../services/sound';
+import { VOICE_MESSAGES } from '../../assets/voiceMessages';
 
 interface LoginViewProps {
   onLoginSuccess: (student: Student) => void;
@@ -16,7 +17,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
 
   React.useEffect(() => {
-    speakInstruction('Selamat datang di DIGIVOS7, Digital Voting OSIS SMPN 7 Bangkalan. Silahkan masukkan nama.');
+    speakInstruction(VOICE_MESSAGES.welcome);
   }, []);
 
   const handleSearchSubmit = async (e: React.FormEvent) => {
@@ -78,7 +79,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
             </div>
             
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Selamat Datang di DIGIVOS7 👋
+              Halo, Sobat DIGIVOS7! 👋
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-slate-600">
               Masukkan nama kamu untuk melanjutkan pemilihan.

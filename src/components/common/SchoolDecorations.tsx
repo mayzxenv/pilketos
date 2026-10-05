@@ -1,5 +1,6 @@
 import React from 'react';
 import confetti from 'canvas-confetti';
+import ballotBoxImage from '../../assets/images/icon.webp';
 
 export function fireSchoolConfetti() {
   try {
@@ -103,7 +104,5 @@ export const SchoolBagIllustration: React.FC<{ className?: string }> = ({ classN
 );
 
 export const BallotBoxIllustration: React.FC<{ className?: string }> = ({ className = 'w-12 h-12' }) => (
-  <div className={`${className} flex items-center justify-center rounded-xl bg-blue-600 text-3xl shadow-inner`} role="img" aria-label="Kotak suara DIGIVOS7">
-    🗳️
-  </div>
+  <img src={ballotBoxImage} alt="Logo OSIS DIGIVOS7" className={`${className} object-contain`} />
 );

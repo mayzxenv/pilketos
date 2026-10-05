@@ -51,6 +51,11 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       }
     } catch (err) {
       console.warn('Network or server exception during submission:', err);
+      if (err instanceof Error && err.message.startsWith('Gagal menyimpan suara:')) {
+        setErrorMessage(err.message);
+        setIsSubmitting(false);
+        return;
+      }
       // As specified in Section 16: Handle network disconnect safely!
       // Do NOT show "Voting gagal." Immediately inspect idempotency status to prevent duplicate votes
       setIsSubmitting(false);

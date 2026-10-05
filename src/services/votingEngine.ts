@@ -23,6 +23,9 @@ function serverMessage(error: { message: string }): VoteSubmissionResponse | nul
   if (error.message.includes('CANDIDATE_NOT_FOUND')) {
     return { success: false, message: 'Kandidat yang dipilih tidak valid atau sudah tidak aktif.' };
   }
+  if (error.message.includes('ELECTION_SETTINGS_NOT_FOUND')) {
+    return { success: false, message: 'Pengaturan pemilu belum dibuat. Panitia harus membuka menu Pengaturan dan menyimpannya terlebih dahulu.' };
+  }
   return null;
 }
 

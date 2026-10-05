@@ -3,6 +3,7 @@ import { Candidate, Student, VoteSubmissionResponse } from '../../types';
 import { fireSchoolConfetti, FloatingSchoolElements } from '../common/SchoolDecorations';
 import { Check, ShieldCheck, Clock, UserCheck, ArrowRight } from 'lucide-react';
 import { speakInstruction } from '../../services/sound';
+import { VOICE_MESSAGES } from '../../assets/voiceMessages';
 
 interface SuccessViewProps {
   student: Student;
@@ -22,7 +23,7 @@ export const SuccessView: React.FC<SuccessViewProps> = ({
   useEffect(() => {
     // Fire festive celebration confetti
     fireSchoolConfetti();
-    speakInstruction('Terima kasih telah memilih. Suara Anda berhasil disimpan.');
+    speakInstruction(VOICE_MESSAGES.voteComplete);
 
     // Auto-countdown timer 5 seconds to return to fresh login for the next student
     const timer = setInterval(() => {
