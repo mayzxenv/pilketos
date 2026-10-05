@@ -4,9 +4,9 @@ import { Plus, Edit2, Trash2, Award, X, Upload, Image as ImageIcon, Check } from
 
 interface CandidateManageViewProps {
   candidates: Candidate[];
-  onAddCandidate: (candidate: Candidate) => void;
-  onUpdateCandidate: (candidate: Candidate) => void;
-  onDeleteCandidate: (candidateId: string) => void;
+  onAddCandidate: (candidate: Candidate) => Promise<void>;
+  onUpdateCandidate: (candidate: Candidate) => Promise<void>;
+  onDeleteCandidate: (candidateId: string) => Promise<void>;
 }
 
 export const CandidateManageView: React.FC<CandidateManageViewProps> = ({
@@ -79,7 +79,7 @@ export const CandidateManageView: React.FC<CandidateManageViewProps> = ({
     reader.readAsDataURL(file);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nama.trim() || !nomorUrut.trim() || !visi.trim()) {
       setFormError('Nama, nomor urut, dan visi wajib diisi.');
@@ -108,7 +108,12 @@ export const CandidateManageView: React.FC<CandidateManageViewProps> = ({
         motto: motto.trim(),
         status: 'active'
       };
-      onAddCandidate(newCand);
+      try {
+        await onAddCandidate(newCand);
+      } catch (error) {
+        setFormError(error instanceof Error ? error.message : 'Gagal menyimpan kandidat.');
+        return;
+      }
     } else {
       const updated: Candidate = {
         ...editingCandidate,
@@ -120,7 +125,12 @@ export const CandidateManageView: React.FC<CandidateManageViewProps> = ({
         misi: misiList,
         motto: motto.trim()
       };
-      onUpdateCandidate(updated);
+      try {
+        await onUpdateCandidate(updated);
+      } catch (error) {
+        setFormError(error instanceof Error ? error.message : 'Gagal memperbarui kandidat.');
+        return;
+      }
     }
 
     setIsModalOpen(false);

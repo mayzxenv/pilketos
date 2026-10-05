@@ -53,8 +53,15 @@ export const RemoteStorageService = {
 
   async saveCandidates(candidates: Candidate[]): Promise<void> {
     const rows = candidates.map(({ nomorUrut, ...candidate }) => ({
-      ...candidate,
-      nomor_urut: nomorUrut
+      id: candidate.id,
+      nomor_urut: nomorUrut,
+      nama: candidate.nama,
+      kelas: candidate.kelas,
+      foto: candidate.foto,
+      visi: candidate.visi,
+      misi: candidate.misi,
+      motto: candidate.motto,
+      status: candidate.status
     }));
     const { error } = await supabase().from('candidates').upsert(rows, { onConflict: 'id' });
     if (error) throw new Error(`Gagal menyimpan kandidat: ${error.message}`);

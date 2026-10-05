@@ -4,9 +4,9 @@ import { Search, Plus, Upload, Trash2, Edit2, Filter, UserCheck, CheckCircle2, C
 
 interface VoterManageViewProps {
   students: Student[];
-  onAddStudent: (student: Student) => void;
-  onUpdateStudent: (student: Student) => void;
-  onDeleteStudent: (studentId: string) => void;
+  onAddStudent: (student: Student) => Promise<void>;
+  onUpdateStudent: (student: Student) => Promise<void>;
+  onDeleteStudent: (studentId: string) => Promise<void>;
   onOpenImportCsv: () => void;
   onClearVotesOnly: () => void;
 }
@@ -73,7 +73,7 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
     setIsFormModalOpen(true);
   };
 
-  const handleSaveStudent = (e: React.FormEvent) => {
+  const handleSaveStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formId.trim() || !formName.trim() || !formClass.trim()) {
       setFormError('Semua kolom wajib diisi.');
@@ -86,20 +86,30 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
         setFormError(`student_id ${formId} sudah digunakan oleh siswa lain.`);
         return;
       }
-      onAddStudent({
-        student_id: formId.trim(),
-        nama: formName.trim(),
-        kelas: formClass.trim(),
-        status_voted: false,
-        voted_at: null,
-        device_id: null
-      });
+      try {
+        await onAddStudent({
+          student_id: formId.trim(),
+          nama: formName.trim(),
+          kelas: formClass.trim(),
+          status_voted: false,
+          voted_at: null,
+          device_id: null
+        });
+      } catch (error) {
+        setFormError(error instanceof Error ? error.message : 'Gagal menyimpan data siswa.');
+        return;
+      }
     } else {
-      onUpdateStudent({
-        ...editingStudent,
-        nama: formName.trim(),
-        kelas: formClass.trim()
-      });
+      try {
+        await onUpdateStudent({
+          ...editingStudent,
+          nama: formName.trim(),
+          kelas: formClass.trim()
+        });
+      } catch (error) {
+        setFormError(error instanceof Error ? error.message : 'Gagal memperbarui data siswa.');
+        return;
+      }
     }
 
     setIsFormModalOpen(false);
