@@ -68,11 +68,13 @@ export const RemoteStorageService = {
   },
 
   async deleteCandidate(candidateId: string): Promise<void> {
-    const { error } = await supabase()
-      .from('candidates')
-      .update({ status: 'inactive' })
-      .eq('id', candidateId);
-    if (error) throw new Error(`Gagal menghapus kandidat: ${error.message}`);
+    const { error } = await supabase().from('candidates').delete().eq('id', candidateId);
+    if (error) {
+      if (error.code === '23503') {
+        throw new Error('Kandidat tidak dapat dihapus permanen karena sudah memiliki suara.');
+      }
+      throw new Error(`Gagal menghapus kandidat secara permanen: ${error.message}`);
+    }
   },
 
   async getSettings(): Promise<ElectionSettings> {

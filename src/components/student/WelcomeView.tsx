@@ -67,10 +67,22 @@ export const WelcomeView: React.FC<WelcomeViewProps> = ({
               </p>
             </div>
 
-            <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-600 to-indigo-700 p-5 text-white shadow-sm">
-              <span className="text-[10px] uppercase font-bold tracking-widest text-blue-100">DIGIVOS7</span>
-              <p className="mt-1 text-lg font-black">Digital Voting OSIS</p>
-              <p className="text-xs text-blue-100">{settings.school_name}</p>
+            <div className="relative min-h-36 overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-sm">
+              {settings.banner_image_url ? (
+                <>
+                  <img
+                    src={settings.banner_image_url}
+                    alt="Banner DIGIVOS7"
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-slate-950/45" />
+                </>
+              ) : null}
+              <div className="relative p-5">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-blue-100">DIGIVOS7</span>
+                <p className="mt-1 text-lg font-black">Digital Voting OSIS</p>
+                <p className="text-xs text-blue-100">{settings.school_name}</p>
+              </div>
             </div>
 
             <div className="flex items-center justify-between text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-200">

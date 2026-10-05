@@ -32,9 +32,13 @@ create table if not exists public.election_settings (
   start_time timestamptz not null,
   end_time timestamptz not null,
   network_simulation_error boolean not null default false,
+  banner_image_url text,
   spreadsheet_webhook_url text,
   spreadsheet_last_synced timestamptz
 );
+
+alter table public.election_settings
+  add column if not exists banner_image_url text;
 
 create table if not exists public.voting_devices (
   id text primary key,

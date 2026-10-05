@@ -201,7 +201,7 @@ export const CandidateManageView: React.FC<CandidateManageViewProps> = ({
                   </button>
                   <button
                     onClick={() => {
-                      if (window.confirm(`Hapus Calon ${cand.nomorUrut} (${cand.nama})?`)) {
+                      if (window.confirm(`Hapus permanen Calon ${cand.nomorUrut} (${cand.nama})? Tindakan ini tidak dapat dibatalkan.`)) {
                         setDeleteError(null);
                         setDeletingCandidateId(cand.id);
                         onDeleteCandidate(cand.id)

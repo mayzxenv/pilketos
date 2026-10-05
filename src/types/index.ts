@@ -53,6 +53,7 @@ export interface ElectionSettings {
   start_time: string;
   end_time: string;
   network_simulation_error: boolean;
+  banner_image_url?: string | null;
   spreadsheet_webhook_url?: string; // Google Spreadsheet Webhook / Apps Script
   spreadsheet_last_synced?: string;
 }

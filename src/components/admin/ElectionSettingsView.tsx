@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { ElectionSettings } from '../../types';
 import { Vote, AlertTriangle, ShieldCheck, CheckCircle2, Sliders, RefreshCw, WifiOff, Award, ArrowRight } from 'lucide-react';
 
@@ -19,6 +19,8 @@ export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
   const [academicYear, setAcademicYear] = useState(settings.academic_year);
   const [stage, setStage] = useState(settings.stage || 'PUTARAN_1');
   const [simError, setSimError] = useState(settings.network_simulation_error);
+  const [bannerImageUrl, setBannerImageUrl] = useState(settings.banner_image_url ?? '');
+  const bannerInputRef = useRef<HTMLInputElement | null>(null);
 
   const [confirmCloseModal, setConfirmCloseModal] = useState(false);
   const [confirmOpenModal, setConfirmOpenModal] = useState(false);
@@ -33,10 +35,28 @@ export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
       school_name: schoolName.trim(),
       academic_year: academicYear.trim(),
       stage: stage,
-      network_simulation_error: simError
+      network_simulation_error: simError,
+      banner_image_url: bannerImageUrl.trim() || null
     });
     setSaveSuccessMsg(true);
     setTimeout(() => setSaveSuccessMsg(false), 3000);
+  };
+
+  const handleBannerUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Berkas banner harus berupa gambar.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Ukuran banner maksimal 5MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => setBannerImageUrl(typeof reader.result === 'string' ? reader.result : '');
+    reader.readAsDataURL(file);
+    event.target.value = '';
   };
 
   const handleSetStatus = (status: 'NOT_STARTED' | 'ACTIVE' | 'CLOSED') => {
@@ -88,6 +108,35 @@ export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
             <span>Pengaturan berhasil disimpan!</span>
           </div>
         )}
+      </div>
+
+      {/* Stage Selector: Putaran 1 (Utama) vs Putaran 2 (Opsi Tie-Breaker) */}
+      <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+        <div>
+          <h2 className="text-sm font-bold text-slate-900">Banner Halaman Sambutan</h2>
+          <p className="text-xs text-slate-500 mt-1">Gambar lanskap yang tampil di kolom DIGIVOS7 pada halaman kedua.</p>
+        </div>
+        <div className="flex flex-col md:flex-row gap-4 items-start">
+          <div className="w-full md:w-80 aspect-[2.4/1] rounded-2xl overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700 border border-slate-200">
+            {bannerImageUrl ? (
+              <img src={bannerImageUrl} alt="Preview banner" className="w-full h-full object-cover" />
+            ) : (
+              <div className="h-full flex items-center justify-center text-xs font-bold text-white/80">Belum ada banner</div>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <input ref={bannerInputRef} type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
+            <button type="button" onClick={() => bannerInputRef.current?.click()} className="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold">
+              {bannerImageUrl ? 'Ganti Banner' : 'Tambah Banner'}
+            </button>
+            {bannerImageUrl && (
+              <button type="button" onClick={() => setBannerImageUrl('')} className="px-4 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 text-xs font-bold">
+                Hapus Banner
+              </button>
+            )}
+            <p className="w-full text-[11px] text-slate-500">Format gambar umum, maksimal 5MB. Klik “Simpan Pengaturan Umum” di bawah untuk menyimpan.</p>
+          </div>
+        </div>
       </div>
 
       {/* Stage Selector: Putaran 1 (Utama) vs Putaran 2 (Opsi Tie-Breaker) */}
