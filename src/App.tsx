@@ -185,21 +185,22 @@ export default function App() {
   };
 
   const handleAddCandidate = async (cand: Candidate) => {
-    await RemoteStorageService.saveCandidates([...candidates, cand]);
+    await RemoteStorageService.saveCandidates([cand]);
     await RemoteStorageService.addAuditLog('CANDIDATE_ADDED', 'Admin', `Menambahkan Calon ${cand.nomorUrut}: ${cand.nama}`);
-    await reloadAllData(true);
+    await reloadAllData();
   };
 
   const handleUpdateCandidate = async (cand: Candidate) => {
     await RemoteStorageService.saveCandidates([cand]);
     await RemoteStorageService.addAuditLog('CANDIDATE_UPDATED', 'Admin', `Memperbarui profil Calon ${cand.nomorUrut}: ${cand.nama}`);
-    await reloadAllData(true);
+    await reloadAllData();
   };
 
   const handleDeleteCandidate = async (candId: string) => {
     await RemoteStorageService.deleteCandidate(candId);
     await RemoteStorageService.addAuditLog('CANDIDATE_DELETED', 'Admin', `Menghapus kandidat ID: ${candId}`);
-    await reloadAllData(true);
+    setCandidates((currentCandidates) => currentCandidates.filter((candidate) => candidate.id !== candId));
+    await reloadAllData();
   };
 
   const handleUpdateSettings = async (newSettings: ElectionSettings) => {

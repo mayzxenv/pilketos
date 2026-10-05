@@ -29,6 +29,8 @@ export const CandidateManageView: React.FC<CandidateManageViewProps> = ({
   const [misiText, setMisiText] = useState('');
   const [motto, setMotto] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [deletingCandidateId, setDeletingCandidateId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const openAddModal = () => {
     setEditingCandidate(null);
@@ -163,6 +165,12 @@ export const CandidateManageView: React.FC<CandidateManageViewProps> = ({
         </button>
       </div>
 
+      {deleteError && (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-700">
+          {deleteError}
+        </div>
+      )}
+
       {/* Candidates Grid */}
       <div className={`grid gap-6 ${
         candidates.length <= 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
@@ -194,13 +202,23 @@ export const CandidateManageView: React.FC<CandidateManageViewProps> = ({
                   <button
                     onClick={() => {
                       if (window.confirm(`Hapus Calon ${cand.nomorUrut} (${cand.nama})?`)) {
-                        onDeleteCandidate(cand.id);
+                        setDeleteError(null);
+                        setDeletingCandidateId(cand.id);
+                        onDeleteCandidate(cand.id)
+                          .catch((error) => {
+                            setDeleteError(error instanceof Error ? error.message : 'Gagal menghapus kandidat.');
+                          })
+                          .finally(() => setDeletingCandidateId(null));
                       }
                     }}
                     className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-white rounded-lg transition-colors border border-slate-200 cursor-pointer"
                     title="Hapus Kandidat"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    {deletingCandidateId === cand.id ? (
+                      <span className="text-[10px] font-bold">...</span>
+                    ) : (
+                      <Trash2 className="w-3.5 h-3.5" />
+                    )}
                   </button>
                 </div>
               </div>
