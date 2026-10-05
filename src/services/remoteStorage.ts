@@ -80,7 +80,10 @@ export const RemoteStorageService = {
   async getSettings(): Promise<ElectionSettings> {
     const { data, error } = await supabase().from('election_settings').select('*').eq('id', true).single();
     if (error) throw new Error(`Gagal memuat pengaturan pemilu: ${error.message}`);
-    return data as ElectionSettings;
+    return {
+      ...data,
+      banner_image_url: data.banner_image_url ?? null
+    } as ElectionSettings;
   },
 
   async saveSettings(settings: ElectionSettings): Promise<void> {

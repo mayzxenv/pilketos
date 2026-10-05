@@ -243,12 +243,12 @@ begin
     raise exception 'ADMIN_AUTH_REQUIRED';
   end if;
 
-  delete from public.votes;
-  delete from public.vote_requests;
-  delete from public.candidates;
-  delete from public.students;
-  delete from public.voting_devices;
-  delete from public.audit_logs;
+  delete from public.votes where true;
+  delete from public.vote_requests where true;
+  delete from public.candidates where true;
+  delete from public.students where true;
+  delete from public.voting_devices where true;
+  delete from public.audit_logs where true;
   update public.election_settings
   set status = 'NOT_STARTED';
 end;
