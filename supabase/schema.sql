@@ -245,19 +245,12 @@ begin
 
   delete from public.votes;
   delete from public.vote_requests;
-  update public.students
-  set status_voted = false, voted_at = null, device_id = null;
-  update public.voting_devices
-  set votes_processed = 0, status = 'idle';
-  insert into public.audit_logs (id, timestamp, action, actor, details, severity)
-  values (
-    'log-' || gen_random_uuid()::text,
-    now(),
-    'ELECTION_CLEARED',
-    auth.uid()::text,
-    'Seluruh suara dan status pemilih direset untuk sesi pemilihan baru.',
-    'critical'
-  );
+  delete from public.candidates;
+  delete from public.students;
+  delete from public.voting_devices;
+  delete from public.audit_logs;
+  update public.election_settings
+  set status = 'NOT_STARTED';
 end;
 $$;
 

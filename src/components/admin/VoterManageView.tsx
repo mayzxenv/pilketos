@@ -191,10 +191,10 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
 
           <button
             onClick={onClearVotesOnly}
-            className="px-3 py-2 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl border border-rose-200 transition-colors"
-            title="Kosongkan status suara untuk mulai pemungutan suara baru dari 0"
+            className="px-3 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl border border-rose-700 transition-colors"
+            title="Hapus permanen semua data pemilu"
           >
-            Reset Program Pemilu
+            Reset & Hapus Semua Data
           </button>
         </div>
       </div>

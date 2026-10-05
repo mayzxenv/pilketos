@@ -177,10 +177,14 @@ export default function App() {
   };
 
   const handleClearVotesOnly = () => {
-    if (window.confirm('PERINGATAN: Seluruh suara dan riwayat pemilihan akan dikosongkan ke 0 untuk memulai sesi baru. Lanjutkan?')) {
+    if (window.confirm('PERINGATAN KERAS: reset ini akan menghapus permanen semua kandidat, DPT, suara, data PID/perangkat, request voting, dan audit log. Data tidak dapat dipulihkan. Lanjutkan?')
+      && window.confirm('Konfirmasi terakhir: hapus SEMUA data pemilu sekarang?')) {
       void RemoteStorageService.clearElectionDataOnly()
         .then(() => reloadAllData(true))
-        .catch((error: unknown) => console.error('Gagal mereset pemilu:', error));
+        .catch((error: unknown) => {
+          const message = error instanceof Error ? error.message : 'Gagal mereset seluruh data pemilu.';
+          window.alert(message);
+        });
     }
   };
 
