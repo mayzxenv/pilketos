@@ -161,7 +161,7 @@ export const PIDDisplayView: React.FC<PIDDisplayViewProps> = ({
               </span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight">
-              SIVOT — {settings.title}
+              DIGIVOS7 — {settings.title}
             </h1>
           </div>
         </div>
@@ -520,7 +520,7 @@ export const PIDDisplayView: React.FC<PIDDisplayViewProps> = ({
       {/* Footer Branding */}
       <footer className="relative z-10 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
         <div>
-          <span>{settings.school_name}</span> · <span>SIVOT (Sistem Informasi Voting Terpadu)</span>
+          <span>{settings.school_name}</span> · <span>DIGIVOS7 (Digital Voting OSIS)</span>
         </div>
         <div className="font-semibold text-emerald-400">
           ✓ Hasil Terverifikasi Sistem Kriptografi Anonim

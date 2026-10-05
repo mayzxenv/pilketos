@@ -3,6 +3,7 @@ import { Student } from '../../types';
 import { VotingEngine } from '../../services/votingEngine';
 import { FloatingSchoolElements, BallotBoxIllustration } from '../common/SchoolDecorations';
 import { Search, UserCheck, AlertCircle, ChevronRight, School } from 'lucide-react';
+import { speakInstruction } from '../../services/sound';
 
 interface LoginViewProps {
   onLoginSuccess: (student: Student) => void;
@@ -13,6 +14,10 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [duplicateMatches, setDuplicateMatches] = useState<Student[]>([]);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+
+  React.useEffect(() => {
+    speakInstruction('Selamat datang di DIGIVOS7, Digital Voting OSIS SMPN 7 Bangkalan. Silahkan masukkan nama.');
+  }, []);
 
   const handleSearchSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +78,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
             </div>
             
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Halo, Sobat SIVOT! 👋
+              Selamat Datang di DIGIVOS7 👋
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-slate-600">
               Masukkan nama kamu untuk melanjutkan pemilihan.
@@ -123,7 +128,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
 
         <p className="mt-3 text-center text-[11px] text-slate-500 flex items-center justify-center gap-1">
           <School className="w-3.5 h-3.5 text-slate-400" />
-          <span>Pemilihan Terbuka & Rahasia · 1 Siswa = 1 Hak Suara</span>
+          <span>Digital Voting OSIS SMPN 7 Bangkalan · 1 Siswa = 1 Hak Suara</span>
         </p>
       </div>
 

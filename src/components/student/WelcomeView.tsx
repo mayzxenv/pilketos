@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Candidate, ElectionSettings, Student } from '../../types';
 import { FloatingSchoolElements } from '../common/SchoolDecorations';
-import { HERO_IMAGE } from '../../data/initialData';
 import { CheckCircle2, ArrowRight, Award, UserCheck, ShieldAlert, LogOut, Sparkles } from 'lucide-react';
 import { playWelcomeSound } from '../../services/sound';
 
@@ -68,22 +67,10 @@ export const WelcomeView: React.FC<WelcomeViewProps> = ({
               </p>
             </div>
 
-            {/* Mini School Banner */}
-            <div className="relative rounded-2xl overflow-hidden aspect-[16/8] border border-slate-100 shadow-sm bg-slate-100">
-              <img
-                src={HERO_IMAGE}
-                alt="Sekolah SIVOT"
-                className="w-full h-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent flex flex-col justify-end p-3 text-white">
-                <span className="text-[10px] uppercase font-bold text-blue-300">
-                  {settings.subtitle}
-                </span>
-                <span className="text-sm font-bold">
-                  {settings.title}
-                </span>
-              </div>
+            <div className="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-600 to-indigo-700 p-5 text-white shadow-sm">
+              <span className="text-[10px] uppercase font-bold tracking-widest text-blue-100">DIGIVOS7</span>
+              <p className="mt-1 text-lg font-black">Digital Voting OSIS</p>
+              <p className="text-xs text-blue-100">{settings.school_name}</p>
             </div>
 
             <div className="flex items-center justify-between text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-200">

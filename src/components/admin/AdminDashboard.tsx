@@ -62,7 +62,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             Dashboard Pemilihan Ketua OSIS
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            SIVOT mengawasi proses pemungutan suara secara real-time, transparan, dan terlindungi.
+            DIGIVOS7 mengawasi proses pemungutan suara secara real-time, transparan, dan terlindungi.
           </p>
         </div>
 

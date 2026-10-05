@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Candidate, Student, VoteSubmissionResponse } from '../../types';
 import { fireSchoolConfetti, FloatingSchoolElements } from '../common/SchoolDecorations';
 import { Check, ShieldCheck, Clock, UserCheck, ArrowRight } from 'lucide-react';
+import { speakInstruction } from '../../services/sound';
 
 interface SuccessViewProps {
   student: Student;
@@ -21,6 +22,7 @@ export const SuccessView: React.FC<SuccessViewProps> = ({
   useEffect(() => {
     // Fire festive celebration confetti
     fireSchoolConfetti();
+    speakInstruction('Terima kasih telah memilih. Suara Anda berhasil disimpan.');
 
     // Auto-countdown timer 5 seconds to return to fresh login for the next student
     const timer = setInterval(() => {

@@ -1,6 +1,6 @@
-# SIVOT
+# DIGIVOS7
 
-SIVOT adalah aplikasi e-voting Ketua OSIS berbasis React dan Vite.
+DIGIVOS7 adalah aplikasi Digital Voting OSIS SMPN 7 Bangkalan berbasis React dan Vite.
 
 ## Menjalankan lokal
 

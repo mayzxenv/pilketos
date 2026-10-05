@@ -29,7 +29,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ logs }) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `audit_logs_sivot_${Date.now()}.json`;
+    link.download = `audit_logs_digivos7_${Date.now()}.json`;
     link.click();
     URL.revokeObjectURL(url);
   };

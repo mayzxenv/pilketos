@@ -48,7 +48,7 @@ function resumeAudio(): void {
   if (!context || context.state === 'running') return;
 
   void context.resume().catch((error: unknown) => {
-    console.warn('SIVOT tidak dapat mengaktifkan suara:', error);
+    console.warn('DIGIVOS7 tidak dapat mengaktifkan suara:', error);
   });
 }
 
@@ -84,4 +84,16 @@ export function playWelcomeSound(): void {
     type: 'sine',
     startAt: 0.24
   });
+}
+
+export function speakInstruction(message: string): void {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(message);
+  utterance.lang = 'id-ID';
+  utterance.rate = 0.92;
+  utterance.pitch = 1.04;
+  utterance.volume = 1;
+  window.speechSynthesis.speak(utterance);
 }

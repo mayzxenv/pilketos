@@ -92,10 +92,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           <BallotBoxIllustration className="w-11 h-11" />
           <div>
             <span className="text-base font-extrabold text-blue-900 leading-tight block">
-              SIVOT
+              DIGIVOS7
             </span>
             <span className="text-[10px] text-slate-500 font-medium block leading-tight">
-              Sistem Informasi Voting Terpadu
+              Digital Voting OSIS · SMPN 7 Bangkalan
             </span>
           </div>
         </div>

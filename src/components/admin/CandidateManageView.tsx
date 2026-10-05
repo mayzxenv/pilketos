@@ -24,7 +24,7 @@ export const CandidateManageView: React.FC<CandidateManageViewProps> = ({
   const [nomorUrut, setNomorUrut] = useState('04');
   const [nama, setNama] = useState('');
   const [kelas, setKelas] = useState('8A');
-  const [foto, setFoto] = useState('/src/assets/images/candidate_01_aditya_1791114605130.jpg');
+  const [foto, setFoto] = useState('');
   const [visi, setVisi] = useState('');
   const [misiText, setMisiText] = useState('');
   const [motto, setMotto] = useState('');
@@ -36,7 +36,7 @@ export const CandidateManageView: React.FC<CandidateManageViewProps> = ({
     setNomorUrut(nextNum);
     setNama('');
     setKelas('8A');
-    setFoto('/src/assets/images/candidate_01_aditya_1791114605130.jpg');
+    setFoto('');
     setVisi('');
     setMisiText('1. Mengembangkan minat bakat siswa\n2. Menjalin solidaritas antar kelas\n3. Menjaga kebersihan lingkungan sekolah');
     setMotto('Aspiratif, Solutif, Bersahabat!');
@@ -303,7 +303,7 @@ export const CandidateManageView: React.FC<CandidateManageViewProps> = ({
                   type="text"
                   value={nama}
                   onChange={(e) => setNama(e.target.value)}
-                  placeholder="Contoh: Nayla Salsabila"
+                  placeholder="Masukkan nama kandidat"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500"
                   autoFocus
                 />

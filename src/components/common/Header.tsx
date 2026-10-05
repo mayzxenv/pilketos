@@ -32,10 +32,10 @@ export const Header: React.FC<HeaderProps> = ({
             <BallotBoxIllustration className="w-12 h-12 transform group-hover:scale-105 transition-transform" />
             <div>
               <span className="text-xl font-bold tracking-tight text-blue-900 block leading-tight">
-                SIVOT
+                DIGIVOS7
               </span>
               <span className="text-[11px] font-medium text-slate-500 block leading-tight">
-                Sistem Informasi Voting Terpadu
+                Digital Voting OSIS · SMPN 7 Bangkalan
               </span>
             </div>
           </button>

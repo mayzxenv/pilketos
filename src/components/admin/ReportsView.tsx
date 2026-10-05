@@ -64,7 +64,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `berita_acara_sivot_${Date.now()}.csv`;
+    link.download = `berita_acara_digivos7_${Date.now()}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -117,7 +117,7 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             {settings.school_name}
           </h3>
           <p className="text-xs text-slate-600 mt-0.5">
-            Komisi Pemilihan Umum OSIS Terpadu (SIVOT) · Tahun Pelajaran {settings.academic_year}
+            Panitia Pemilihan OSIS DIGIVOS7 · Tahun Pelajaran {settings.academic_year}
           </p>
         </div>
 
@@ -127,13 +127,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
             BERITA ACARA REKAPITULASI HASIL PEMILIHAN KETUA OSIS
           </h4>
           <p className="text-xs text-slate-500 font-mono mt-1">
-            Nomor: BA-OSIS/{new Date().getFullYear()}/0410-SIVOT · {settings.stage === 'PUTARAN_2_OPSIONAL' ? 'PUTARAN 2' : 'TAHAP UTAMA'}
+            Nomor: BA-OSIS/{new Date().getFullYear()}/0410-DIGIVOS7 · {settings.stage === 'PUTARAN_2_OPSIONAL' ? 'PUTARAN 2' : 'TAHAP UTAMA'}
           </p>
         </div>
 
         <div className="text-xs text-slate-700 leading-relaxed mb-6 space-y-2">
           <p>
-            Pada hari ini, <strong>Minggu tanggal 04 Oktober 2026</strong>, telah dilaksanakan pemungutan dan penghitungan suara secara elektronik melalui sistem <strong>SIVOT (Sistem Informasi Voting Terpadu)</strong> di lingkungan {settings.school_name} dengan rincian sebagai berikut:
+            Pada hari ini telah dilaksanakan pemungutan dan penghitungan suara secara elektronik melalui sistem <strong>DIGIVOS7 (Digital Voting OSIS)</strong> di lingkungan {settings.school_name} dengan rincian sebagai berikut:
           </p>
         </div>
 

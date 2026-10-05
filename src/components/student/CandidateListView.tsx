@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Candidate, Student } from '../../types';
 import { FloatingSchoolElements } from '../common/SchoolDecorations';
 import { ArrowLeft, ArrowRight, Info, X, Check, Award } from 'lucide-react';
+import { speakInstruction } from '../../services/sound';
 
 interface CandidateListViewProps {
   student: Student;
@@ -17,6 +18,10 @@ export const CandidateListView: React.FC<CandidateListViewProps> = ({
   onBack
 }) => {
   const [detailModalCandidate, setDetailModalCandidate] = useState<Candidate | null>(null);
+
+  useEffect(() => {
+    speakInstruction('Silahkan memilih kandidat.');
+  }, []);
 
   return (
     <div className="relative h-[calc(100vh-4rem)] max-h-[calc(100vh-4rem)] overflow-hidden p-3 sm:p-5 flex flex-col justify-between bg-gradient-to-b from-blue-50/40 via-slate-50 to-indigo-50/30">
@@ -43,7 +48,7 @@ export const CandidateListView: React.FC<CandidateListViewProps> = ({
         </div>
 
         <div className="text-xs font-bold text-blue-700 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-          4 Kandidat Siap Dipilih
+          {candidates.length} Kandidat Siap Dipilih
         </div>
       </div>
 

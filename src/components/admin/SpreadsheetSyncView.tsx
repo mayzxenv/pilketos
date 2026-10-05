@@ -71,7 +71,7 @@ export const SpreadsheetSyncView: React.FC<SpreadsheetSyncViewProps> = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `sivot_kehadiran_google_sheets_${Date.now()}.csv`;
+    link.download = `digivos7_kehadiran_google_sheets_${Date.now()}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -84,7 +84,7 @@ export const SpreadsheetSyncView: React.FC<SpreadsheetSyncViewProps> = ({
     }).sort((a, b) => b.voteCount - a.voteCount);
 
     const lines = [
-      `SIVOT — REKAPITULASI RESMI GOOGLE SPREADSHEET`,
+      `DIGIVOS7 — REKAPITULASI RESMI GOOGLE SPREADSHEET`,
       `Sekolah: ${settings.school_name}`,
       `Agenda: ${settings.title} (${settings.subtitle})`,
       `Tanggal Sync: ${new Date().toLocaleString('id-ID')}`,
@@ -103,7 +103,7 @@ export const SpreadsheetSyncView: React.FC<SpreadsheetSyncViewProps> = ({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `sivot_rekap_lengkap_google_sheets_${Date.now()}.csv`;
+    link.download = `digivos7_rekap_lengkap_google_sheets_${Date.now()}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };

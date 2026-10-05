@@ -57,7 +57,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
               Login Khusus Admin
             </h1>
             <p className="text-xs text-slate-300 mt-1">
-              Portal pengawasan pemilihan dan manajemen SIVOT
+              Portal pengawasan DIGIVOS7 SMPN 7 Bangkalan
             </p>
           </div>
 
