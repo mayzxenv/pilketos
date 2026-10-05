@@ -67,13 +67,13 @@ export const WelcomeView: React.FC<WelcomeViewProps> = ({
               </p>
             </div>
 
-            <div className="relative min-h-36 overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-sm">
+            <div className="relative aspect-[16/7] w-full overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-sm">
               {settings.banner_image_url?.trim() ? (
                 <>
                   <img
                     src={settings.banner_image_url}
                     alt="Banner DIGIVOS7"
-                    className="absolute inset-0 h-full w-full object-cover"
+                    className="absolute inset-0 h-full w-full object-contain"
                     onError={(event) => {
                       event.currentTarget.style.display = 'none';
                     }}

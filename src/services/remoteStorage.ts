@@ -43,7 +43,11 @@ export const RemoteStorageService = {
   },
 
   async getCandidates(): Promise<Candidate[]> {
-    const { data, error } = await supabase().from('candidates').select('*').order('nomor_urut');
+    const { data, error } = await supabase()
+      .from('candidates')
+      .select('*')
+      .eq('status', 'active')
+      .order('nomor_urut');
     if (error) throw new Error(`Gagal memuat kandidat: ${error.message}`);
     return (data ?? []).map((candidate) => ({
       ...candidate,
@@ -61,7 +65,7 @@ export const RemoteStorageService = {
       visi: candidate.visi,
       misi: candidate.misi,
       motto: candidate.motto,
-      status: candidate.status
+      status: candidate.status || 'active'
     }));
     const { error } = await supabase().from('candidates').upsert(rows, { onConflict: 'id' });
     if (error) throw new Error(`Gagal menyimpan kandidat: ${error.message}`);

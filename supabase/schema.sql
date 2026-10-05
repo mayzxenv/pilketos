@@ -205,7 +205,7 @@ begin
   if v_student.status_voted then raise exception 'ALREADY_VOTED'; end if;
   if not exists (
     select 1 from public.candidates
-    where id = p_candidate_id and status = 'active'
+    where id = p_candidate_id and lower(status) = 'active'
   ) then raise exception 'CANDIDATE_NOT_FOUND'; end if;
 
   insert into public.votes (id, candidate_id, created_at, device_id, request_id, ballot_hash, stage)
