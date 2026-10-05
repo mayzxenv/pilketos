@@ -38,7 +38,7 @@ interface AdminLayoutProps {
   onAddCandidate: (c: Candidate) => Promise<void>;
   onUpdateCandidate: (c: Candidate) => Promise<void>;
   onDeleteCandidate: (id: string) => Promise<void>;
-  onUpdateSettings: (s: ElectionSettings) => void;
+  onUpdateSettings: (s: ElectionSettings) => Promise<void>;
   onOpenDisplayMode: () => void;
   onExitAdmin: () => void;
   onAdminAuthenticated: () => void;
@@ -166,7 +166,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             settings={settings}
             onOpenDisplayMode={onOpenDisplayMode}
             onActivateStage2={() => {
-              onUpdateSettings({ ...settings, stage: 'PUTARAN_2_OPSIONAL' });
+              void onUpdateSettings({ ...settings, stage: 'PUTARAN_2_OPSIONAL' });
               alert('Opsi Putaran 2 (Tie-Breaker) telah diaktifkan!');
             }}
           />

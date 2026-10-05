@@ -209,13 +209,14 @@ export default function App() {
 
   const handleUpdateSettings = async (newSettings: ElectionSettings) => {
     await RemoteStorageService.saveSettings(newSettings);
+    setSettings(newSettings);
     await RemoteStorageService.addAuditLog(
       'SETTINGS_MODIFIED',
       'Admin',
       `Pengaturan diperbarui. Status pemilihan: ${newSettings.status}`,
       'info'
     );
-    await reloadAllData(true);
+    await reloadAllData();
   };
 
   const handleDeviceChange = (devId: string) => {

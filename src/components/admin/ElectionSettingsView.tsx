@@ -4,7 +4,7 @@ import { Vote, AlertTriangle, ShieldCheck, CheckCircle2, Sliders, RefreshCw, Wif
 
 interface ElectionSettingsViewProps {
   settings: ElectionSettings;
-  onUpdateSettings: (newSettings: ElectionSettings) => void;
+  onUpdateSettings: (newSettings: ElectionSettings) => Promise<void>;
   onClearVotesOnly: () => void;
 }
 
@@ -25,10 +25,28 @@ export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
   const [confirmCloseModal, setConfirmCloseModal] = useState(false);
   const [confirmOpenModal, setConfirmOpenModal] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSaveGeneral = (e: React.FormEvent) => {
+  const saveSettings = async (newSettings: ElectionSettings) => {
+    setSaveError(null);
+    setIsSaving(true);
+    try {
+      await onUpdateSettings(newSettings);
+      setSaveSuccessMsg(true);
+      setTimeout(() => setSaveSuccessMsg(false), 3000);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Gagal menyimpan pengaturan.');
+      throw error;
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleSaveGeneral = async (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdateSettings({
+    try {
+      await saveSettings({
       ...settings,
       title: title.trim(),
       subtitle: subtitle.trim(),
@@ -37,9 +55,10 @@ export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
       stage: stage,
       network_simulation_error: simError,
       banner_image_url: bannerImageUrl.trim() || null
-    });
-    setSaveSuccessMsg(true);
-    setTimeout(() => setSaveSuccessMsg(false), 3000);
+      });
+    } catch {
+      // The error is shown in the settings panel.
+    }
   };
 
   const handleBannerUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,23 +84,25 @@ export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
     } else if (status === 'ACTIVE') {
       setConfirmOpenModal(true);
     } else {
-      onUpdateSettings({ ...settings, status: 'NOT_STARTED' });
+      void saveSettings({ ...settings, status: 'NOT_STARTED' }).catch(() => undefined);
     }
   };
 
   const confirmClose = () => {
-    onUpdateSettings({ ...settings, status: 'CLOSED' });
-    setConfirmCloseModal(false);
+    void saveSettings({ ...settings, status: 'CLOSED' })
+      .then(() => setConfirmCloseModal(false))
+      .catch(() => undefined);
   };
 
   const confirmOpen = () => {
-    onUpdateSettings({ ...settings, status: 'ACTIVE' });
-    setConfirmOpenModal(false);
+    void saveSettings({ ...settings, status: 'ACTIVE' })
+      .then(() => setConfirmOpenModal(false))
+      .catch(() => undefined);
   };
 
   const toggleStage = (newStage: 'PUTARAN_1' | 'PUTARAN_2_OPSIONAL') => {
     setStage(newStage);
-    onUpdateSettings({ ...settings, stage: newStage });
+    void saveSettings({ ...settings, stage: newStage }).catch(() => undefined);
   };
 
   return (
@@ -106,6 +127,11 @@ export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
           <div className="p-3 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-xl flex items-center gap-1.5 border border-emerald-200">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             <span>Pengaturan berhasil disimpan!</span>
+          </div>
+        )}
+        {saveError && (
+          <div className="p-3 bg-rose-50 text-rose-800 text-xs font-bold rounded-xl border border-rose-200">
+            {saveError}
           </div>
         )}
       </div>
@@ -398,9 +424,10 @@ export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
             <div className="pt-2">
               <button
                 type="submit"
+                disabled={isSaving}
                 className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-sm transition-all"
               >
-                Simpan Perubahan Identitas
+                {isSaving ? 'Menyimpan...' : 'Simpan Perubahan & Banner'}
               </button>
             </div>
           </form>
@@ -433,7 +460,7 @@ export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
                     checked={simError}
                     onChange={(e) => {
                       setSimError(e.target.checked);
-                      onUpdateSettings({ ...settings, network_simulation_error: e.target.checked });
+                      void saveSettings({ ...settings, network_simulation_error: e.target.checked }).catch(() => undefined);
                     }}
                     className="sr-only peer"
                   />
