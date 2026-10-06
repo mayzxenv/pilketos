@@ -1,5 +1,6 @@
 import React from 'react';
 import { Candidate, ElectionSettings, Student, VotingDevice } from '../../types';
+import { getVoterWeight } from '../../services/voteWeights';
 import { AdminMenuKey } from './AdminSidebar';
 import { Users, UserCheck, UserX, Percent, Activity, Laptop, ArrowRight, ShieldCheck, CheckCircle2, Clock } from 'lucide-react';
 
@@ -19,8 +20,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onNavigateMenu,
   onOpenDisplayMode
 }) => {
-  const totalVoters = students.length;
-  const votedCount = students.filter((s) => s.status_voted).length;
+  const totalVoters = students.reduce((total, student) => total + getVoterWeight(student), 0);
+  const votedCount = students.filter((s) => s.status_voted).reduce((total, student) => total + getVoterWeight(student), 0);
   const unvotedCount = totalVoters - votedCount;
   const participationRate = totalVoters > 0 ? ((votedCount / totalVoters) * 100).toFixed(1) : '0';
 

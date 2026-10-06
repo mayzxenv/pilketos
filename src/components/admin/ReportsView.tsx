@@ -1,5 +1,6 @@
 import React from 'react';
 import { Candidate, ElectionSettings, Student, VoteRecord } from '../../types';
+import { getVoteWeight, getVoterWeight } from '../../services/voteWeights';
 import { Printer, Download, Trophy, Medal } from 'lucide-react';
 
 interface ReportsViewProps {
@@ -15,13 +16,13 @@ export const ReportsView: React.FC<ReportsViewProps> = ({
   votes,
   settings
 }) => {
-  const totalDpt = students.length;
-  const totalVotesCast = votes.length;
+  const totalDpt = students.reduce((total, student) => total + getVoterWeight(student), 0);
+  const totalVotesCast = votes.reduce((total, vote) => total + getVoteWeight(vote), 0);
   const totalUnvoted = totalDpt - totalVotesCast;
   const participationRate = totalDpt > 0 ? ((totalVotesCast / totalDpt) * 100).toFixed(1) : '0';
 
   const candidateStats = candidates.map((cand) => {
-    const candVotes = votes.filter((v) => v.candidate_id === cand.id).length;
+    const candVotes = votes.filter((v) => v.candidate_id === cand.id).reduce((total, vote) => total + getVoteWeight(vote), 0);
     const percentage = totalVotesCast > 0 ? ((candVotes / totalVotesCast) * 100).toFixed(1) : '0';
     return {
       ...cand,

@@ -3,8 +3,7 @@ import { Student } from '../../types';
 import { VotingEngine } from '../../services/votingEngine';
 import { FloatingSchoolElements, BallotBoxIllustration } from '../common/SchoolDecorations';
 import { Search, UserCheck, AlertCircle, ChevronRight, School } from 'lucide-react';
-import { speakInstruction } from '../../services/sound';
-import { VOICE_MESSAGES } from '../../assets/voiceMessages';
+import { playWelcomeSound } from '../../services/sound';
 
 interface LoginViewProps {
   onLoginSuccess: (student: Student) => void;
@@ -17,7 +16,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
 
   React.useEffect(() => {
-    speakInstruction(VOICE_MESSAGES.welcome);
+    playWelcomeSound();
   }, []);
 
   const handleSearchSubmit = async (e: React.FormEvent) => {
@@ -90,7 +89,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
           <form onSubmit={handleSearchSubmit} className="space-y-4">
             <div>
               <label htmlFor="student-name" className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Nama Lengkap Siswa
+                Nama Lengkap Pemilih
               </label>
               <div className="relative">
                 <input

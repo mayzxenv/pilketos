@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Candidate, ElectionSettings, Student, VoteRecord } from '../../types';
+import { getVoteWeight, getVoterWeight } from '../../services/voteWeights';
 import { BarChart3, Award, Users, ShieldAlert, Eye, EyeOff, CheckCircle2, Trophy, Medal, PieChart, Sparkles, AlertTriangle } from 'lucide-react';
 
 interface ResultsViewProps {
@@ -21,13 +22,13 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
 }) => {
   const [adminBypassPreview, setAdminBypassPreview] = useState(false);
 
-  const totalVoters = students.length;
-  const totalVotesCast = votes.length;
+  const totalVoters = students.reduce((total, student) => total + getVoterWeight(student), 0);
+  const totalVotesCast = votes.reduce((total, vote) => total + getVoteWeight(vote), 0);
   const participationRate = totalVoters > 0 ? ((totalVotesCast / totalVoters) * 100).toFixed(1) : '0';
 
   // Calculate vote tally for each candidate
   const candidateStats = candidates.map((cand) => {
-    const candVotes = votes.filter((v) => v.candidate_id === cand.id).length;
+    const candVotes = votes.filter((v) => v.candidate_id === cand.id).reduce((total, vote) => total + getVoteWeight(vote), 0);
     const percentage = totalVotesCast > 0 ? ((candVotes / totalVotesCast) * 100).toFixed(1) : '0';
     return {
       ...cand,
@@ -180,7 +181,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                 <div>
                   <div className="flex items-center gap-4 mb-4 mt-2">
                     <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-amber-500 shadow-md shrink-0 bg-slate-100">
-                      <img src={ketos.foto} alt={ketos.nama} className="w-full h-full object-cover" />
+                      <img src={ketos.foto} alt={ketos.nama} className="w-full h-full object-contain" />
                       <span className="absolute bottom-1 left-1 bg-amber-500 text-slate-950 font-black font-mono text-[10px] px-1.5 py-0.5 rounded">
                         {ketos.nomorUrut}
                       </span>
@@ -229,7 +230,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                 <div>
                   <div className="flex items-center gap-4 mb-4 mt-2">
                     <div className="relative w-20 h-20 rounded-2xl overflow-hidden border-2 border-slate-400 shadow-md shrink-0 bg-slate-100">
-                      <img src={waketos.foto} alt={waketos.nama} className="w-full h-full object-cover" />
+                      <img src={waketos.foto} alt={waketos.nama} className="w-full h-full object-contain" />
                       <span className="absolute bottom-1 left-1 bg-slate-700 text-white font-black font-mono text-[10px] px-1.5 py-0.5 rounded">
                         {waketos.nomorUrut}
                       </span>
@@ -289,7 +290,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
                       <div key={cand.id} className="p-3 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
                           <div className="w-10 h-10 rounded-xl overflow-hidden border border-slate-200 shrink-0 bg-white">
-                            <img src={cand.foto} alt={cand.nama} className="w-full h-full object-cover" />
+                            <img src={cand.foto} alt={cand.nama} className="w-full h-full object-contain" />
                           </div>
                           <div>
                             <span className="font-bold text-xs text-slate-900 block leading-tight">

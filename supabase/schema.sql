@@ -4,10 +4,35 @@ create table if not exists public.students (
   student_id text primary key,
   nama text not null,
   kelas text not null,
+  voter_type text not null default 'SISWA' check (voter_type in ('SISWA', 'GURU')),
+  voter_weight integer not null default 1 check (voter_weight in (1, 3)),
   status_voted boolean not null default false,
   voted_at timestamptz,
   device_id text
 );
+
+alter table public.students add column if not exists voter_type text not null default 'SISWA';
+alter table public.students add column if not exists voter_weight integer not null default 1;
+alter table public.students drop constraint if exists students_voter_type_check;
+alter table public.students add constraint students_voter_type_check check (voter_type in ('SISWA', 'GURU'));
+update public.students set voter_weight = case when voter_type = 'GURU' then 3 else 1 end;
+alter table public.students drop constraint if exists students_voter_weight_check;
+alter table public.students add constraint students_voter_weight_check check (voter_weight in (1, 3));
+
+create or replace function public.sync_voter_weight()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.voter_weight := case when new.voter_type = 'GURU' then 3 else 1 end;
+  return new;
+end;
+$$;
+
+drop trigger if exists sync_voter_weight on public.students;
+create trigger sync_voter_weight
+before insert or update of voter_type on public.students
+for each row execute function public.sync_voter_weight();
 
 create table if not exists public.candidates (
   id text primary key,
@@ -58,8 +83,13 @@ create table if not exists public.votes (
   device_id text not null,
   request_id text not null unique,
   ballot_hash text not null unique,
+  vote_weight integer not null default 1 check (vote_weight in (1, 3)),
   stage text not null
 );
+
+alter table public.votes add column if not exists vote_weight integer not null default 1;
+alter table public.votes drop constraint if exists votes_vote_weight_check;
+alter table public.votes add constraint votes_vote_weight_check check (vote_weight in (1, 3));
 
 create table if not exists public.vote_requests (
   request_id text primary key,
@@ -107,6 +137,7 @@ alter table public.vote_requests enable row level security;
 alter table public.audit_logs enable row level security;
 
 drop policy if exists "public can search students" on public.students;
+drop policy if exists "public can read voting status" on public.students;
 drop policy if exists "authenticated admins read students" on public.students;
 drop policy if exists "authenticated admins manage students" on public.students;
 drop policy if exists "public can read active candidates" on public.candidates;
@@ -115,10 +146,13 @@ drop policy if exists "public can read settings" on public.election_settings;
 drop policy if exists "authenticated admins manage settings" on public.election_settings;
 drop policy if exists "authenticated admins manage devices" on public.voting_devices;
 drop policy if exists "authenticated admins read votes" on public.votes;
+drop policy if exists "public can read vote results" on public.votes;
 drop policy if exists "authenticated admins manage vote requests" on public.vote_requests;
 drop policy if exists "authenticated admins manage audit logs" on public.audit_logs;
 create policy "authenticated admins read students"
   on public.students for select to authenticated using (true);
+create policy "public can read voting status"
+  on public.students for select to anon using (true);
 create policy "authenticated admins manage students"
   on public.students for all to authenticated using (true) with check (true);
 create policy "public can read active candidates"
@@ -133,25 +167,30 @@ create policy "authenticated admins manage devices"
   on public.voting_devices for all to authenticated using (true) with check (true);
 create policy "authenticated admins read votes"
   on public.votes for select to authenticated using (true);
+create policy "public can read vote results"
+  on public.votes for select to anon using (true);
 create policy "authenticated admins manage vote requests"
   on public.vote_requests for all to authenticated using (true) with check (true);
 create policy "authenticated admins manage audit logs"
   on public.audit_logs for all to authenticated using (true) with check (true);
 
+drop function if exists public.search_students_by_name(text);
 create or replace function public.search_students_by_name(p_query text)
 returns table (
   student_id text,
   nama text,
   kelas text,
+  voter_type text,
   status_voted boolean,
   voted_at timestamptz,
-  device_id text
+  device_id text,
+  voter_weight integer
 )
 language sql
 security definer
 set search_path = public
 as $$
-  select s.student_id, s.nama, s.kelas, s.status_voted, s.voted_at, s.device_id
+  select s.student_id, s.nama, s.kelas, s.voter_type, s.status_voted, s.voted_at, s.device_id, s.voter_weight
   from public.students s
   where s.nama ilike '%' || trim(p_query) || '%'
   order by s.nama;
@@ -208,8 +247,8 @@ begin
     where id = p_candidate_id and lower(status) = 'active'
   ) then raise exception 'CANDIDATE_NOT_FOUND'; end if;
 
-  insert into public.votes (id, candidate_id, created_at, device_id, request_id, ballot_hash, stage)
-  values ('v-' || gen_random_uuid()::text, p_candidate_id, v_now, p_device_id, p_request_id, p_ballot_hash, v_settings.stage);
+  insert into public.votes (id, candidate_id, created_at, device_id, request_id, ballot_hash, stage, vote_weight)
+  values ('v-' || gen_random_uuid()::text, p_candidate_id, v_now, p_device_id, p_request_id, p_ballot_hash, v_settings.stage, case when v_student.voter_type = 'GURU' then 3 else 1 end);
 
   update public.students
   set status_voted = true, voted_at = v_now, device_id = p_device_id
@@ -250,9 +289,52 @@ begin
   delete from public.voting_devices where true;
   delete from public.audit_logs where true;
   update public.election_settings
-  set status = 'NOT_STARTED';
+  set status = 'NOT_STARTED'
+  where id = true;
 end;
 $$;
 
 revoke all on function public.reset_election_data() from public;
 grant execute on function public.reset_election_data() to authenticated;
+
+create or replace function public.reset_vote_results()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.role() <> 'authenticated' then
+    raise exception 'ADMIN_AUTH_REQUIRED';
+  end if;
+
+  delete from public.votes where true;
+  delete from public.vote_requests where true;
+
+  update public.students
+  set status_voted = false,
+      voted_at = null,
+      device_id = null
+  where student_id is not null;
+
+  update public.voting_devices
+  set votes_processed = 0,
+      status = 'idle'
+  where id is not null;
+
+  insert into public.audit_logs (
+    id, timestamp, action, actor, details, severity
+  )
+  values (
+    'log-' || gen_random_uuid()::text,
+    now(),
+    'VOTE_RESULTS_RESET',
+    auth.uid()::text,
+    'Hasil suara dan status pemilih direset tanpa menghapus DPT, kandidat, banner, atau pengaturan pemilu.',
+    'warning'
+  );
+end;
+$$;
+
+revoke all on function public.reset_vote_results() from public;
+grant execute on function public.reset_vote_results() to authenticated;

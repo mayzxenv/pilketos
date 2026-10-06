@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Candidate, Student, VoteSubmissionResponse } from '../../types';
 import { fireSchoolConfetti, FloatingSchoolElements } from '../common/SchoolDecorations';
 import { Check, ShieldCheck, Clock, UserCheck, ArrowRight } from 'lucide-react';
-import { speakInstruction } from '../../services/sound';
-import { VOICE_MESSAGES } from '../../assets/voiceMessages';
+import { playVoteCompleteSound } from '../../services/sound';
 
 interface SuccessViewProps {
   student: Student;
@@ -17,15 +16,14 @@ export const SuccessView: React.FC<SuccessViewProps> = ({
   response,
   onFinishAndReset
 }) => {
-  // Timer diubah menjadi 5 detik sesuai permintaan pengguna
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(10);
 
   useEffect(() => {
     // Fire festive celebration confetti
     fireSchoolConfetti();
-    speakInstruction(VOICE_MESSAGES.voteComplete);
+    playVoteCompleteSound();
 
-    // Auto-countdown timer 5 seconds to return to fresh login for the next student
+    // Auto-countdown timer 10 seconds to return to fresh login for the next student
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -71,7 +69,7 @@ export const SuccessView: React.FC<SuccessViewProps> = ({
             </div>
 
             <div className="flex items-center justify-between text-slate-600">
-              <span>Nama Siswa:</span>
+              <span>Nama Pemilih:</span>
               <span className="font-bold text-slate-800">{student.nama}</span>
             </div>
 
@@ -90,10 +88,10 @@ export const SuccessView: React.FC<SuccessViewProps> = ({
 
           <div className="p-2.5 rounded-xl bg-blue-50 text-blue-800 text-[11px] font-medium flex items-center justify-center gap-2 mb-4">
             <UserCheck className="w-3.5 h-3.5 text-blue-600" />
-            <span>Hak suara siswa ini telah terkunci dan sesi telah selesai.</span>
+            <span>Hak suara pemilih ini telah terkunci dan sesi telah selesai.</span>
           </div>
 
-          {/* Return Button & 5s Countdown */}
+          {/* Return Button & 10s Countdown */}
           <div className="space-y-2">
             <button
               onClick={onFinishAndReset}

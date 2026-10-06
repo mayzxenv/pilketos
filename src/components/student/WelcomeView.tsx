@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Candidate, ElectionSettings, Student } from '../../types';
 import { FloatingSchoolElements } from '../common/SchoolDecorations';
 import { CheckCircle2, ArrowRight, Award, UserCheck, ShieldAlert, LogOut, Sparkles } from 'lucide-react';
-import { playWelcomeSound } from '../../services/sound';
+import { playBannerSound } from '../../services/sound';
 
 interface WelcomeViewProps {
   student: Student;
@@ -19,8 +19,10 @@ export const WelcomeView: React.FC<WelcomeViewProps> = ({
   onStartVoting,
   onLogout
 }) => {
+  const voterLabel = student.voter_type === 'GURU' ? 'Guru' : 'Siswa';
+
   useEffect(() => {
-    playWelcomeSound();
+    playBannerSound();
   }, []);
 
   return (
@@ -53,21 +55,21 @@ export const WelcomeView: React.FC<WelcomeViewProps> = ({
         {/* Horizontal 2-Column Split: KIRI Identitas & BANNER, KANAN TATA CARA MENYAMPING */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-5 my-3 items-center">
           {/* Kolom Kiri: Sambutan & Hero Mini (5 cols) */}
-          <div className="md:col-span-5 flex flex-col justify-center space-y-3">
+          <div className="md:col-span-6 flex flex-col justify-center space-y-3">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-blue-600 flex items-center gap-1">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Bilik Suara Digital Siswa</span>
+                <span>Bilik Suara Digital Pemilih</span>
               </span>
               <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight mt-0.5">
                 Halo, {student.nama}! 👋
               </h1>
               <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                Siswa Kelas <strong className="text-blue-900 font-bold">{student.kelas}</strong> · Hak pilihmu aktif dan sah digunakan.
+                {voterLabel} · <strong className="text-blue-900 font-bold">{student.kelas}</strong> · Hak pilihmu aktif dan sah digunakan.
               </p>
             </div>
 
-            <div className="relative aspect-[16/7] w-full overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-sm">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-sm">
               {settings.banner_image_url?.trim() ? (
                 <>
                   <img
@@ -78,14 +80,8 @@ export const WelcomeView: React.FC<WelcomeViewProps> = ({
                       event.currentTarget.style.display = 'none';
                     }}
                   />
-                  <div className="absolute inset-0 bg-slate-950/45" />
                 </>
               ) : null}
-              <div className="relative p-5">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-blue-100">DIGIVOS7</span>
-                <p className="mt-1 text-lg font-black">Digital Voting OSIS</p>
-                <p className="text-xs text-blue-100">{settings.school_name}</p>
-              </div>
             </div>
 
             <div className="flex items-center justify-between text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-200">
@@ -95,7 +91,7 @@ export const WelcomeView: React.FC<WelcomeViewProps> = ({
           </div>
 
           {/* Kolom Kanan: TATA CARA MENYAMPING (HORIZONTAL) (7 cols) */}
-          <div className="md:col-span-7 flex flex-col justify-between space-y-3">
+          <div className="md:col-span-6 flex flex-col justify-between space-y-3">
             <div>
               <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-2">
                 Tata Cara Memilih (3 Langkah Cepat)
@@ -154,14 +150,14 @@ export const WelcomeView: React.FC<WelcomeViewProps> = ({
             <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-center gap-2.5">
               <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0" />
               <span>
-                <strong>Asas LUBER:</strong> Pilihanmu sepenuhnya rahasia dan aman. Satu siswa berhak atas 1 suara.
+                <strong>Asas LUBER:</strong> Pilihanmu sepenuhnya rahasia dan aman. Satu pemilih berhak atas 1 suara.
               </span>
             </div>
 
             {/* Action CTA Button */}
             <div className="pt-1 flex items-center justify-between gap-4">
               <span className="text-[11px] text-slate-400">
-                Waktu voting: ~1 menit per siswa
+                Waktu voting: ~1 menit per pemilih
               </span>
               <button
                 onClick={onStartVoting}

@@ -35,6 +35,7 @@ interface AdminLayoutProps {
   onDeleteStudent: (id: string) => Promise<void>;
   onImportStudents: (students: Student[], mode: 'replace' | 'merge') => void;
   onClearVotesOnly: () => void;
+  onClearElectionData: () => void;
   onAddCandidate: (c: Candidate) => Promise<void>;
   onUpdateCandidate: (c: Candidate) => Promise<void>;
   onDeleteCandidate: (id: string) => Promise<void>;
@@ -56,6 +57,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   onDeleteStudent,
   onImportStudents,
   onClearVotesOnly,
+  onClearElectionData,
   onAddCandidate,
   onUpdateCandidate,
   onDeleteCandidate,
@@ -143,6 +145,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             onDeleteStudent={onDeleteStudent}
             onOpenImportCsv={() => setIsImportCsvOpen(true)}
             onClearVotesOnly={onClearVotesOnly}
+            onClearElectionData={onClearElectionData}
           />
         )}
 

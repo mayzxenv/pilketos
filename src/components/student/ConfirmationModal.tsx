@@ -105,7 +105,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             <img
               src={candidate.foto}
               alt={candidate.nama}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               referrerPolicy="no-referrer"
             />
             <div className="absolute top-1 left-1 bg-blue-600 text-white font-mono text-xs font-black px-1.5 py-0.5 rounded">

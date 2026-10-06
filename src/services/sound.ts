@@ -7,6 +7,7 @@ type SoundOptions = {
 };
 
 let audioContext: AudioContext | null = null;
+let thankYouAudioInstance: HTMLAudioElement | null = null;
 
 function getAudioContext(): AudioContext | null {
   if (typeof window === 'undefined') return null;
@@ -63,37 +64,40 @@ export function playClickSound(): void {
 }
 
 export function playWelcomeSound(): void {
-  resumeAudio();
-  playTone({
-    frequency: 523.25,
-    duration: 0.18,
-    volume: 0.06,
-    type: 'sine'
-  });
-  playTone({
-    frequency: 659.25,
-    duration: 0.24,
-    volume: 0.06,
-    type: 'sine',
-    startAt: 0.12
-  });
-  playTone({
-    frequency: 783.99,
-    duration: 0.3,
-    volume: 0.05,
-    type: 'sine',
-    startAt: 0.24
+  playAudioAsset(welcomeAudio);
+}
+
+export function playChooseCandidateSound(): void {
+  playAudioAsset(chooseCandidateAudio);
+}
+
+export function playVoteCompleteSound(): void {
+  if (typeof window === 'undefined') return;
+  if (!thankYouAudioInstance) {
+    thankYouAudioInstance = new Audio(thankYouAudio);
+    thankYouAudioInstance.volume = 1;
+  }
+  thankYouAudioInstance.pause();
+  thankYouAudioInstance.currentTime = 0;
+  void thankYouAudioInstance.play().catch((error: unknown) => {
+    console.warn('DIGIVOS7 tidak dapat memutar audio:', error);
   });
 }
 
-export function speakInstruction(message: string): void {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(message);
-  utterance.lang = 'id-ID';
-  utterance.rate = 0.92;
-  utterance.pitch = 1.04;
-  utterance.volume = 1;
-  window.speechSynthesis.speak(utterance);
+export function playBannerSound(): void {
+  playAudioAsset(bannerAudio);
 }
+
+function playAudioAsset(source: string): void {
+  if (typeof window === 'undefined') return;
+
+  const audio = new Audio(source);
+  audio.volume = 1;
+  void audio.play().catch((error: unknown) => {
+    console.warn('DIGIVOS7 tidak dapat memutar audio:', error);
+  });
+}
+import chooseCandidateAudio from '../assets/pilihkandidat.mp3';
+import welcomeAudio from '../assets/selamat datang.mp3';
+import thankYouAudio from '../assets/terimakasih.mp3';
+import bannerAudio from '../assets/page 2 di tempat banner.mp3';

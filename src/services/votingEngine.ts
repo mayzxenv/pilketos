@@ -48,7 +48,7 @@ export const VotingEngine = {
   async getStudentById(studentId: string): Promise<Student | undefined> {
     const { data, error } = await requireSupabase()
       .from('students')
-      .select('student_id,nama,kelas,status_voted,voted_at,device_id')
+      .select('student_id,nama,kelas,voter_type,voter_weight,status_voted,voted_at,device_id')
       .eq('student_id', studentId)
       .maybeSingle();
 

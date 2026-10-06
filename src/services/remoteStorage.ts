@@ -12,12 +12,38 @@ const supabase = () => requireSupabase();
 
 export const RemoteStorageService = {
   async getStudents(): Promise<Student[]> {
-    const { data, error } = await supabase()
+    const result = await supabase()
+      .from('students')
+      .select('student_id,nama,kelas,voter_type,voter_weight,status_voted,voted_at,device_id')
+      .order('nama');
+    if (!result.error) return (result.data ?? []) as Student[];
+
+    // Keep the admin DPT usable while an existing Supabase project is being
+    // migrated to the optional weighted-voter columns.
+    const legacyResult = await supabase()
+      .from('students')
+      .select('student_id,nama,kelas,voter_type,status_voted,voted_at,device_id')
+      .order('nama');
+    if (!legacyResult.error) {
+      return (legacyResult.data ?? []).map((student) => ({
+        ...student,
+        voter_type: student.voter_type === 'GURU' ? 'GURU' : 'SISWA',
+        voter_weight: student.voter_type === 'GURU' ? 3 : 1
+      })) as Student[];
+    }
+
+    const originalResult = await supabase()
       .from('students')
       .select('student_id,nama,kelas,status_voted,voted_at,device_id')
       .order('nama');
-    if (error) throw new Error(`Gagal memuat DPT: ${error.message}`);
-    return (data ?? []) as Student[];
+    if (originalResult.error) {
+      throw new Error(`Gagal memuat DPT: ${originalResult.error.message}`);
+    }
+    return (originalResult.data ?? []).map((student) => ({
+      ...student,
+      voter_type: 'SISWA',
+      voter_weight: 1
+    })) as Student[];
   },
 
   async saveStudents(students: Student[]): Promise<void> {
@@ -91,7 +117,23 @@ export const RemoteStorageService = {
   },
 
   async saveSettings(settings: ElectionSettings): Promise<void> {
-    const { error } = await supabase().from('election_settings').upsert({ id: true, ...settings }, { onConflict: 'id' });
+    const { error } = await supabase()
+      .from('election_settings')
+      .update({
+        title: settings.title,
+        subtitle: settings.subtitle,
+        school_name: settings.school_name,
+        status: settings.status,
+        stage: settings.stage,
+        academic_year: settings.academic_year,
+        start_time: settings.start_time,
+        end_time: settings.end_time,
+        network_simulation_error: settings.network_simulation_error,
+        banner_image_url: settings.banner_image_url ?? null,
+        spreadsheet_webhook_url: settings.spreadsheet_webhook_url ?? null,
+        spreadsheet_last_synced: settings.spreadsheet_last_synced ?? null
+      })
+      .eq('id', true);
     if (error) throw new Error(`Gagal menyimpan pengaturan pemilu: ${error.message}`);
   },
 
@@ -141,5 +183,10 @@ export const RemoteStorageService = {
   async clearElectionDataOnly(): Promise<void> {
     const { error } = await supabase().rpc('reset_election_data');
     if (error) throw new Error(`Gagal mereset data pemilu: ${error.message}`);
+  },
+
+  async clearVoteResultsOnly(): Promise<void> {
+    const { error } = await supabase().rpc('reset_vote_results');
+    if (error) throw new Error(`Gagal mereset hasil suara: ${error.message}`);
   }
 };

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Student } from '../../types';
+import { Student, VoterType } from '../../types';
 import { Search, Plus, Upload, Trash2, Edit2, Filter, UserCheck, CheckCircle2, Clock, X } from 'lucide-react';
 
 interface VoterManageViewProps {
@@ -9,6 +9,7 @@ interface VoterManageViewProps {
   onDeleteStudent: (studentId: string) => Promise<void>;
   onOpenImportCsv: () => void;
   onClearVotesOnly: () => void;
+  onClearElectionData: () => void;
 }
 
 export const VoterManageView: React.FC<VoterManageViewProps> = ({
@@ -17,7 +18,8 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
   onUpdateStudent,
   onDeleteStudent,
   onOpenImportCsv,
-  onClearVotesOnly
+  onClearVotesOnly,
+  onClearElectionData
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClass, setSelectedClass] = useState<string>('ALL');
@@ -30,11 +32,12 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
   const [formId, setFormId] = useState('');
   const [formName, setFormName] = useState('');
   const [formClass, setFormClass] = useState('9A');
+  const [formVoterType, setFormVoterType] = useState<VoterType>('SISWA');
   const [formError, setFormError] = useState<string | null>(null);
 
   // Extract unique classes
   const classes = useMemo(() => {
-    const set = new Set(students.map((s) => s.kelas));
+    const set = new Set(students.map((s) => s.kelas || '-'));
     return Array.from(set).sort();
   }, [students]);
 
@@ -42,8 +45,8 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
     return students.filter((s) => {
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        const matchName = s.nama.toLowerCase().includes(q);
-        const matchId = s.student_id.toLowerCase().includes(q);
+        const matchName = (s.nama || '').toLowerCase().includes(q);
+        const matchId = (s.student_id || '').toLowerCase().includes(q);
         if (!matchName && !matchId) return false;
       }
       if (selectedClass !== 'ALL' && s.kelas !== selectedClass) return false;
@@ -60,6 +63,7 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
     setFormId(`STU-${String(nextNum).padStart(4, '0')}`);
     setFormName('');
     setFormClass('9A');
+    setFormVoterType('SISWA');
     setFormError(null);
     setIsFormModalOpen(true);
   };
@@ -69,6 +73,7 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
     setFormId(student.student_id);
     setFormName(student.nama);
     setFormClass(student.kelas);
+    setFormVoterType(student.voter_type ?? 'SISWA');
     setFormError(null);
     setIsFormModalOpen(true);
   };
@@ -91,6 +96,7 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
           student_id: formId.trim(),
           nama: formName.trim(),
           kelas: formClass.trim(),
+          voter_type: formVoterType,
           status_voted: false,
           voted_at: null,
           device_id: null
@@ -104,7 +110,8 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
         await onUpdateStudent({
           ...editingStudent,
           nama: formName.trim(),
-          kelas: formClass.trim()
+          kelas: formClass.trim(),
+          voter_type: formVoterType
         });
       } catch (error) {
         setFormError(error instanceof Error ? error.message : 'Gagal memperbarui data siswa.');
@@ -126,10 +133,10 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
             </span>
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Manajemen Data Pemilih ({students.length} Siswa)
+            Manajemen Data Pemilih ({students.length} Pemilih)
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Kelola identitas siswa terdaftar dengan input manual atau import data resmi sekolah.
+            Kelola siswa dan guru yang terdaftar sebagai pemilih melalui input manual atau import data resmi sekolah.
           </p>
         </div>
 
@@ -191,6 +198,14 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
 
           <button
             onClick={onClearVotesOnly}
+            className="px-3 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl border border-amber-700 transition-colors"
+            title="Reset hasil suara tanpa menghapus data pemilu"
+          >
+            Reset Hasil Suara
+          </button>
+
+          <button
+            onClick={onClearElectionData}
             className="px-3 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl border border-rose-700 transition-colors"
             title="Hapus permanen semua data pemilu"
           >
@@ -208,6 +223,7 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
                 <th className="py-3 px-4">student_id (PK Unik)</th>
                 <th className="py-3 px-4">Nama Lengkap</th>
                 <th className="py-3 px-4">Kelas</th>
+                <th className="py-3 px-4">Jenis</th>
                 <th className="py-3 px-4">Status Suara</th>
                 <th className="py-3 px-4">Waktu Pemilihan</th>
                 <th className="py-3 px-4 text-right">Aksi</th>
@@ -216,22 +232,29 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
             <tbody className="divide-y divide-slate-100">
               {paginatedStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
-                    Tidak ada siswa ditemukan.
+                  <td colSpan={7} className="py-12 text-center text-slate-400">
+                    Tidak ada pemilih ditemukan.
                   </td>
                 </tr>
               ) : (
                 paginatedStudents.map((s) => (
                   <tr key={s.student_id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-3 px-4 font-mono font-bold text-blue-900">
-                      {s.student_id}
+                      {s.student_id || '-'}
                     </td>
                     <td className="py-3 px-4 font-bold text-slate-900">
-                      {s.nama}
+                      {s.nama || '-'}
                     </td>
                     <td className="py-3 px-4">
                       <span className="font-semibold text-slate-700 bg-slate-100 px-2 py-0.5 rounded text-[11px]">
-                        {s.kelas}
+                        {s.kelas || '-'}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`font-semibold px-2 py-0.5 rounded text-[11px] ${
+                        s.voter_type === 'GURU' ? 'text-violet-700 bg-violet-50' : 'text-slate-700 bg-slate-100'
+                      }`}>
+                        {s.voter_type === 'GURU' ? 'Guru' : 'Siswa'}
                       </span>
                     </td>
                     <td className="py-3 px-4">
@@ -323,7 +346,7 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
               <h3 className="text-base font-bold text-slate-900">
-                {editingStudent ? 'Edit Data Siswa' : 'Tambah Siswa Baru'}
+                {editingStudent ? 'Edit Data Pemilih' : 'Tambah Pemilih Baru'}
               </h3>
               <button
                 onClick={() => setIsFormModalOpen(false)}
@@ -350,7 +373,7 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Nama Lengkap Siswa
+                  Nama Lengkap Pemilih
                 </label>
                 <input
                   type="text"
@@ -364,7 +387,7 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
 
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Kelas
+                  Kelas / Unit Kerja
                 </label>
                 <input
                   type="text"
@@ -373,6 +396,20 @@ export const VoterManageView: React.FC<VoterManageViewProps> = ({
                   placeholder="9A, 8B, atau 7C"
                   className="w-full px-3 py-2 text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Jenis Pemilih
+                </label>
+                <select
+                  value={formVoterType}
+                  onChange={(e) => setFormVoterType(e.target.value as VoterType)}
+                  className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="SISWA">Siswa</option>
+                  <option value="GURU">Guru</option>
+                </select>
               </div>
 
               {formError && (

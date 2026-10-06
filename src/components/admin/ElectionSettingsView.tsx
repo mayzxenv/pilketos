@@ -143,7 +143,7 @@ export const ElectionSettingsView: React.FC<ElectionSettingsViewProps> = ({
           <p className="text-xs text-slate-500 mt-1">Gambar lanskap yang tampil di kolom DIGIVOS7 pada halaman kedua.</p>
         </div>
         <div className="flex flex-col md:flex-row gap-4 items-start">
-          <div className="w-full md:w-80 aspect-[2.4/1] rounded-2xl overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700 border border-slate-200">
+          <div className="w-full md:w-[32rem] aspect-[16/7] rounded-2xl overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-700 border border-slate-200">
             {bannerImageUrl ? (
               <img src={bannerImageUrl} alt="Preview banner" className="w-full h-full object-cover" />
             ) : (

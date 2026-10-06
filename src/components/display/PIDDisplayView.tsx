@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Candidate, ElectionSettings, Student, VoteRecord } from '../../types';
+import { getVoteWeight, getVoterWeight } from '../../services/voteWeights';
 import { BallotBoxIllustration, FloatingSchoolElements } from '../common/SchoolDecorations';
 import { Maximize2, Minimize2, Trophy, Medal, Award, Activity, BarChart3, PieChart as PieChartIcon } from 'lucide-react';
 import {
@@ -38,8 +39,8 @@ export const PIDDisplayView: React.FC<PIDDisplayViewProps> = ({
     return () => clearInterval(timer);
   }, []);
 
-  const totalDpt = students.length;
-  const totalVoted = students.filter((s) => s.status_voted).length;
+  const totalDpt = students.reduce((total, student) => total + getVoterWeight(student), 0);
+  const totalVoted = students.filter((s) => s.status_voted).reduce((total, student) => total + getVoterWeight(student), 0);
   const totalUnvoted = Math.max(0, totalDpt - totalVoted);
   const participationRate = totalDpt > 0 ? ((totalVoted / totalDpt) * 100).toFixed(1) : '0';
 
@@ -48,8 +49,9 @@ export const PIDDisplayView: React.FC<PIDDisplayViewProps> = ({
 
   // Candidate tallies
   const candidateStats = candidates.map((cand) => {
-    const candVotes = votes.filter((v) => v.candidate_id === cand.id).length;
-    const percentage = votes.length > 0 ? ((candVotes / votes.length) * 100).toFixed(1) : '0';
+    const candVotes = votes.filter((v) => v.candidate_id === cand.id).reduce((total, vote) => total + getVoteWeight(vote), 0);
+    const totalVoteWeight = votes.reduce((total, vote) => total + getVoteWeight(vote), 0);
+    const percentage = totalVoteWeight > 0 ? ((candVotes / totalVoteWeight) * 100).toFixed(1) : '0';
     return {
       ...cand,
       voteCount: candVotes,
@@ -319,7 +321,7 @@ export const PIDDisplayView: React.FC<PIDDisplayViewProps> = ({
 
                   <div className="flex items-center gap-3 my-1">
                     <div className="relative w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400 shrink-0 shadow-lg">
-                      <img src={ketos.foto} alt={ketos.nama} className="w-full h-full object-cover" />
+                      <img src={ketos.foto} alt={ketos.nama} className="w-full h-full object-contain" />
                     </div>
                     <div className="min-w-0">
                       <h3 className="text-base font-black text-white leading-tight truncate">{ketos.nama}</h3>
@@ -347,7 +349,7 @@ export const PIDDisplayView: React.FC<PIDDisplayViewProps> = ({
 
                   <div className="flex items-center gap-3 my-1">
                     <div className="relative w-14 h-14 rounded-2xl overflow-hidden border-2 border-slate-300 shrink-0 shadow-lg">
-                      <img src={waketos.foto} alt={waketos.nama} className="w-full h-full object-cover" />
+                      <img src={waketos.foto} alt={waketos.nama} className="w-full h-full object-contain" />
                     </div>
                     <div className="min-w-0">
                       <h3 className="text-base font-black text-white leading-tight truncate">{waketos.nama}</h3>
@@ -377,7 +379,7 @@ export const PIDDisplayView: React.FC<PIDDisplayViewProps> = ({
                   {otherCandidates.map((cand) => (
                     <div key={cand.id} className="flex items-center justify-between text-xs bg-white/5 p-1 rounded-xl">
                       <div className="flex items-center gap-2">
-                        <img src={cand.foto} alt={cand.nama} className="w-6 h-6 rounded-lg object-cover" />
+                        <img src={cand.foto} alt={cand.nama} className="w-6 h-6 rounded-lg object-contain" />
                         <div>
                           <span className="font-bold text-white block text-[11px] leading-tight truncate max-w-[120px]">{cand.nama}</span>
                           <span className="text-[9px] text-slate-400">Calon {cand.nomorUrut} ({cand.kelas})</span>
@@ -405,7 +407,7 @@ export const PIDDisplayView: React.FC<PIDDisplayViewProps> = ({
                       Grafik Batang Perolehan Suara Kandidat (Recharts)
                     </h3>
                   </div>
-                  <span className="text-xs font-mono text-emerald-400 font-bold">{votes.length} Total Suara</span>
+                  <span className="text-xs font-mono text-emerald-400 font-bold">{votes.reduce((total, vote) => total + getVoteWeight(vote), 0)} Total Suara</span>
                 </div>
 
                 {/* Recharts Animated Bar Chart */}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   AuditLog,
   Candidate,
@@ -8,7 +8,7 @@ import {
   VoteRecord,
   VoteSubmissionResponse
 } from './types';
-import { StorageService, subscribeToRealtimeEvents } from './services/storage';
+import { StorageService, broadcastEvent, subscribeToRealtimeEvents } from './services/storage';
 import { Header } from './components/common/Header';
 import { LoginView } from './components/student/LoginView';
 import { WelcomeView } from './components/student/WelcomeView';
@@ -47,9 +47,10 @@ export default function App() {
   const [candidateToConfirm, setCandidateToConfirm] = useState<Candidate | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [lastVoteResponse, setLastVoteResponse] = useState<VoteSubmissionResponse | null>(null);
+  const refreshInFlight = useRef(false);
 
   // Sync state loader
-  const reloadAllData = useCallback(async (includeAdminData = false) => {
+  const reloadAllData = useCallback(async (includeVotingData = false) => {
     const [remoteCandidates, remoteSettings] = await Promise.all([
       RemoteStorageService.getCandidates(),
       RemoteStorageService.getSettings()
@@ -57,19 +58,31 @@ export default function App() {
     setCandidates(remoteCandidates);
     setSettings(remoteSettings);
 
-    if (includeAdminData) {
-      const [remoteStudents, remoteVotes, remoteDevices, remoteAuditLogs] = await Promise.all([
+    if (includeVotingData) {
+      const [remoteStudents, remoteVotes] = await Promise.all([
         RemoteStorageService.getStudents(),
-        RemoteStorageService.getVotes(),
-        RemoteStorageService.getDevices(),
-        RemoteStorageService.getAuditLogs()
+        RemoteStorageService.getVotes()
       ]);
       setStudents(remoteStudents);
       setVotes(remoteVotes);
-      setDevices(remoteDevices);
-      setAuditLogs(remoteAuditLogs);
+
+      // Device and audit-log tables are intentionally restricted to admins.
+      // PID only needs the public DPT/vote aggregates and must not fail its
+      // entire refresh because those admin-only queries are unavailable.
+      if (currentView === 'admin') {
+        try {
+          const [remoteDevices, remoteAuditLogs] = await Promise.all([
+            RemoteStorageService.getDevices(),
+            RemoteStorageService.getAuditLogs()
+          ]);
+          setDevices(remoteDevices);
+          setAuditLogs(remoteAuditLogs);
+        } catch (error: unknown) {
+          console.error('Gagal memuat data perangkat atau audit log admin:', error);
+        }
+      }
     }
-  }, []);
+  }, [currentView]);
 
   useEffect(() => {
     void reloadAllData().catch((error: unknown) => {
@@ -77,15 +90,34 @@ export default function App() {
     });
   }, [reloadAllData]);
 
+  useEffect(() => {
+    if (currentView !== 'display' && currentView !== 'admin') return;
+    const refreshVotingData = () => {
+      if (refreshInFlight.current) return;
+      refreshInFlight.current = true;
+      void reloadAllData(true).catch((error: unknown) => {
+        console.error('Gagal menyinkronkan data PID/admin dari Supabase:', error);
+      }).finally(() => {
+        refreshInFlight.current = false;
+      });
+    };
+    refreshVotingData();
+    const timer = window.setInterval(refreshVotingData, 1000);
+    return () => window.clearInterval(timer);
+  }, [currentView, reloadAllData]);
+
   // Listen to realtime events across windows
   useEffect(() => {
     const unsubscribe = subscribeToRealtimeEvents(() => {
-      void reloadAllData().catch((error: unknown) => {
+      // PID and admin views need fresh vote/DPT aggregates after another
+      // voting tab submits a ballot.
+      const shouldReloadVotingData = currentView === 'admin' || currentView === 'display';
+      void reloadAllData(shouldReloadVotingData).catch((error: unknown) => {
         console.error('Gagal menyinkronkan data pemilu:', error);
       });
     });
     return () => unsubscribe();
-  }, [reloadAllData]);
+  }, [currentView, reloadAllData]);
 
   // Keep interaction feedback consistent across student, admin, and display screens.
   useEffect(() => {
@@ -125,16 +157,22 @@ export default function App() {
     setIsConfirmModalOpen(false);
     setLastVoteResponse(response);
     setStudentStep('success');
+    // Notify PID/admin tabs immediately. The receiving tab then fetches the
+    // authoritative vote and DPT state from Supabase.
+    broadcastEvent('VOTING_DATA_UPDATED', {
+      studentId: currentStudent?.student_id,
+      candidateId: candidate.id
+    });
     void reloadAllData();
   };
 
-  const handleFinishAndReset = () => {
+  const handleFinishAndReset = useCallback(() => {
     setCurrentStudent(null);
     setCandidateToConfirm(null);
     setLastVoteResponse(null);
     setIsConfirmModalOpen(false);
     setStudentStep('login');
-  };
+  }, []);
 
   // Admin Mutations
   const handleAddStudent = async (newStudent: Student) => {
@@ -177,6 +215,17 @@ export default function App() {
   };
 
   const handleClearVotesOnly = () => {
+    if (window.confirm('Reset hasil suara sekarang? Semua suara dan status sudah memilih akan dikosongkan, tetapi DPT, kandidat, banner, dan pengaturan tetap dipertahankan.')) {
+      void RemoteStorageService.clearVoteResultsOnly()
+        .then(() => reloadAllData(true))
+        .catch((error: unknown) => {
+          const message = error instanceof Error ? error.message : 'Gagal mereset hasil suara.';
+          window.alert(message);
+        });
+    }
+  };
+
+  const handleClearElectionData = () => {
     if (window.confirm('PERINGATAN KERAS: reset ini akan menghapus permanen semua kandidat, DPT, suara, data PID/perangkat, request voting, dan audit log. Data tidak dapat dipulihkan. Lanjutkan?')
       && window.confirm('Konfirmasi terakhir: hapus SEMUA data pemilu sekarang?')) {
       void RemoteStorageService.clearElectionDataOnly()
@@ -210,13 +259,17 @@ export default function App() {
   const handleUpdateSettings = async (newSettings: ElectionSettings) => {
     await RemoteStorageService.saveSettings(newSettings);
     setSettings(newSettings);
-    await RemoteStorageService.addAuditLog(
-      'SETTINGS_MODIFIED',
-      'Admin',
-      `Pengaturan diperbarui. Status pemilihan: ${newSettings.status}`,
-      'info'
-    );
-    await reloadAllData();
+    broadcastEvent('SETTINGS_UPDATED', newSettings);
+    try {
+      await RemoteStorageService.addAuditLog(
+        'SETTINGS_MODIFIED',
+        'Admin',
+        `Pengaturan diperbarui. Status pemilihan: ${newSettings.status}`,
+        'info'
+      );
+    } catch (error) {
+      console.warn('Pengaturan tersimpan, tetapi audit log gagal dicatat:', error);
+    }
   };
 
   const handleDeviceChange = (devId: string) => {
@@ -260,6 +313,7 @@ export default function App() {
               onDeleteStudent={handleDeleteStudent}
               onImportStudents={handleImportStudents}
               onClearVotesOnly={handleClearVotesOnly}
+              onClearElectionData={handleClearElectionData}
               onAddCandidate={handleAddCandidate}
               onUpdateCandidate={handleUpdateCandidate}
               onDeleteCandidate={handleDeleteCandidate}

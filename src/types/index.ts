@@ -1,10 +1,13 @@
 export type ElectionStatus = 'NOT_STARTED' | 'ACTIVE' | 'CLOSED';
 export type ElectionStage = 'PUTARAN_1' | 'PUTARAN_2_OPSIONAL';
+export type VoterType = 'SISWA' | 'GURU';
 
 export interface Student {
   student_id: string; // Internal unique primary key, e.g. STU-0001
   nama: string;      // Full name (can be duplicate!)
-  kelas: string;     // e.g. '9A', '8B', '7C'
+  kelas: string;     // Class for students; unit/role for teachers
+  voter_type?: VoterType;
+  voter_weight?: number;
   status_voted: boolean;
   voted_at: string | null; // ISO string
   device_id?: string | null;
@@ -29,6 +32,7 @@ export interface VoteRecord {
   device_id: string;
   request_id: string; // Idempotency key
   ballot_hash: string;
+  vote_weight?: number;
   stage?: ElectionStage;
   // NOTE: student_id is intentionally OMITTED here to guarantee secret ballot
 }

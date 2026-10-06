@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Student } from '../../types';
+import { getVoterWeight } from '../../services/voteWeights';
 import { PieChart, Users, CheckCircle2, Clock } from 'lucide-react';
 
 interface ParticipationViewProps {
@@ -30,8 +31,8 @@ export const ParticipationView: React.FC<ParticipationViewProps> = ({ students }
       .sort((a, b) => a.kelas.localeCompare(b.kelas));
   }, [students]);
 
-  const overallTotal = students.length;
-  const overallVoted = students.filter((s) => s.status_voted).length;
+  const overallTotal = students.reduce((total, student) => total + getVoterWeight(student), 0);
+  const overallVoted = students.filter((s) => s.status_voted).reduce((total, student) => total + getVoterWeight(student), 0);
   const overallPercent = overallTotal > 0 ? ((overallVoted / overallTotal) * 100).toFixed(1) : '0';
 
   return (

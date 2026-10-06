@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Candidate, ElectionSettings, Student, VoteRecord } from '../../types';
+import { getVoteWeight, getVoterWeight } from '../../services/voteWeights';
 import { FileSpreadsheet, Download, RefreshCw, CheckCircle2, ExternalLink, Link, Database, Send, AlertCircle } from 'lucide-react';
 
 interface SpreadsheetSyncViewProps {
@@ -23,8 +24,8 @@ export const SpreadsheetSyncView: React.FC<SpreadsheetSyncViewProps> = ({
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatusMsg, setSyncStatusMsg] = useState<string | null>(null);
 
-  const totalDpt = students.length;
-  const votedCount = students.filter((s) => s.status_voted).length;
+  const totalDpt = students.reduce((total, student) => total + getVoterWeight(student), 0);
+  const votedCount = students.filter((s) => s.status_voted).reduce((total, student) => total + getVoterWeight(student), 0);
 
   const handleSaveWebhook = (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,8 +79,9 @@ export const SpreadsheetSyncView: React.FC<SpreadsheetSyncViewProps> = ({
 
   const handleDownloadFullRecapSheetsCsv = () => {
     const candidateStats = candidates.map((cand) => {
-      const candVotes = votes.filter((v) => v.candidate_id === cand.id).length;
-      const pct = votes.length > 0 ? ((candVotes / votes.length) * 100).toFixed(1) : '0';
+      const candVotes = votes.filter((v) => v.candidate_id === cand.id).reduce((total, vote) => total + getVoteWeight(vote), 0);
+      const totalVoteWeight = votes.reduce((total, vote) => total + getVoteWeight(vote), 0);
+      const pct = totalVoteWeight > 0 ? ((candVotes / totalVoteWeight) * 100).toFixed(1) : '0';
       return { ...cand, voteCount: candVotes, pct };
     }).sort((a, b) => b.voteCount - a.voteCount);
 
@@ -89,7 +91,7 @@ export const SpreadsheetSyncView: React.FC<SpreadsheetSyncViewProps> = ({
       `Agenda: ${settings.title} (${settings.subtitle})`,
       `Tanggal Sync: ${new Date().toLocaleString('id-ID')}`,
       `Total DPT: ${totalDpt}`,
-      `Total Suara Sah: ${votes.length}`,
+      `Total Suara Sah: ${votes.reduce((total, vote) => total + getVoteWeight(vote), 0)}`,
       ``,
       `PEROLEHAN SUARA KANDIDAT`,
       `Nomor Urut,Nama Kandidat,Kelas,Total Suara,Persentase,Penetapan Jabatan`,

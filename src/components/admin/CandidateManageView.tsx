@@ -229,7 +229,7 @@ export const CandidateManageView: React.FC<CandidateManageViewProps> = ({
                   <img
                     src={cand.foto}
                     alt={cand.nama}
-                    className="w-full h-full object-cover object-top"
+                    className="w-full h-full object-contain"
                     referrerPolicy="no-referrer"
                   />
                 </div>
@@ -358,7 +358,7 @@ export const CandidateManageView: React.FC<CandidateManageViewProps> = ({
 
                 <div className="flex items-center gap-3">
                   <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-slate-200 shrink-0 bg-white shadow-sm">
-                    <img src={foto} alt="Preview" className="w-full h-full object-cover" />
+                    <img src={foto} alt="Preview" className="w-full h-full object-contain" />
                   </div>
 
                   <div className="space-y-1.5 flex-1">

@@ -11,6 +11,7 @@ interface ParsedRow {
   student_id: string;
   nama: string;
   kelas: string;
+  voter_type: 'SISWA' | 'GURU';
   isValid: boolean;
   error?: string;
 }
@@ -62,6 +63,7 @@ export const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ onClose, onImpor
     let idIdx = header.findIndex((h) => h.includes('id') || h.includes('nis') || h.includes('nomor'));
     let nameIdx = header.findIndex((h) => h.includes('nama') || h.includes('name') || h.includes('siswa'));
     let classIdx = header.findIndex((h) => h.includes('kelas') || h.includes('class') || h.includes('tingkat') || h.includes('rombel'));
+    let voterTypeIdx = header.findIndex((h) => h.includes('jenis') || h.includes('tipe') || h.includes('role') || h.includes('status pemilih'));
 
     const hasHeader = nameIdx !== -1 || classIdx !== -1;
     const startIndex = hasHeader ? 1 : 0;
@@ -77,6 +79,7 @@ export const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ onClose, onImpor
         idIdx = 0;
         nameIdx = 1;
         classIdx = 2;
+        if (firstCols.length >= 4) voterTypeIdx = 3;
       }
     }
 
@@ -89,6 +92,8 @@ export const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ onClose, onImpor
       let nama = nameIdx !== -1 ? cols[nameIdx] : cols[0];
       let kelas = classIdx !== -1 ? cols[classIdx] : cols[1];
       let id = idIdx !== -1 ? cols[idIdx] : '';
+      const rawVoterType = voterTypeIdx !== -1 ? cols[voterTypeIdx]?.toUpperCase() : '';
+      const voter_type = rawVoterType === 'GURU' || rawVoterType === 'TEACHER' ? 'GURU' : 'SISWA';
 
       // Auto-generate student_id if not present in the Excel spreadsheet
       if (!id) {
@@ -110,6 +115,7 @@ export const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ onClose, onImpor
         student_id: id,
         nama: nama || '-',
         kelas: kelas ? kelas.toUpperCase() : '-',
+        voter_type,
         isValid: !rowError,
         error: rowError
       });
@@ -132,6 +138,7 @@ export const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ onClose, onImpor
         student_id: r.student_id,
         nama: r.nama,
         kelas: r.kelas,
+        voter_type: r.voter_type,
         status_voted: false,
         voted_at: null,
         device_id: null
@@ -245,6 +252,7 @@ export const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ onClose, onImpor
                       <th className="py-2 px-3">student_id</th>
                       <th className="py-2 px-3">nama</th>
                       <th className="py-2 px-3">kelas</th>
+                      <th className="py-2 px-3">jenis</th>
                       <th className="py-2 px-3">Status</th>
                     </tr>
                   </thead>
@@ -254,6 +262,7 @@ export const ImportCsvModal: React.FC<ImportCsvModalProps> = ({ onClose, onImpor
                         <td className="py-1.5 px-3 font-mono text-slate-600">{row.student_id}</td>
                         <td className="py-1.5 px-3 font-semibold text-slate-900">{row.nama}</td>
                         <td className="py-1.5 px-3 text-slate-600">{row.kelas}</td>
+                        <td className="py-1.5 px-3 text-slate-600">{row.voter_type}</td>
                         <td className="py-1.5 px-3">
                           {row.isValid ? (
                             <span className="text-emerald-700 font-bold text-[10px]">Valid</span>
